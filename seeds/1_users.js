@@ -3,7 +3,7 @@ exports.seed = function(knex, Promise) {
     {
       user_id: 1,
       username: 'jhl',
-      hashed_password: '$2a$04$cCQ/G69RvaOjTpTO66vGoe9AjJB6Gk3qIdTbU0RwAp3CkeqgqY6iW',
+      hashed_password: '$2a$04$2okk.gGRneFIZIUKXKgoQ.CMyHXgMSsMg5Gmjh9Nbzo99S8UOIfgO',
       email: 'jon@lindell.com',
       isMod: true
     }

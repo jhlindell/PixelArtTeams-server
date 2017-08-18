@@ -2,7 +2,7 @@
   "name": "pixel-server",
   "version": "1.0.0",
   "description": "the server for TeamPixel",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "nodemon server.js"
   },
@@ -10,9 +10,12 @@
   "author": "Jon Lindell",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^1.0.2",
     "body-parser": "^1.17.2",
     "cookie-parser": "^1.4.3",
+    "dotenv": "^4.0.0",
     "express": "^4.15.4",
+    "jsonwebtoken": "^7.4.3",
     "knex": "^0.13.0",
     "pg": "^7.1.2"
   }

@@ -1,17 +1,19 @@
 {
   "name": "pixel-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "the server for TeamPixel",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Jon Lindell",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.17.2",
     "cookie-parser": "^1.4.3",
-    "express": "^4.15.4"
+    "express": "^4.15.4",
+    "knex": "^0.13.0",
+    "pg": "^7.1.2"
   }
 }

@@ -37,13 +37,12 @@ function addNewProject(){
   let newProject = {};
   newProject.id = allProjects.length + 1;
   newProject.grid = setupNewGrid();
+  newProject.projectName = "Project " + newProject.id;
   allProjects.push(newProject);
 }
 
 function changePixel(pixel){
-
   allProjects[pixel.project-1].grid[pixel.y][pixel.x] = pixel.color;
-  // console.log(allProjects[pixel.project-1]);
 }
 
 io.on('connection', (socket) => {
@@ -64,6 +63,16 @@ io.on('connection', (socket) => {
     changePixel(pixel);
     io.in(pixel.project).emit('pixel', pixel);
   });
+
+  socket.on('initialize', () => {
+    socket.emit('sendProjectsToClient', allProjects);
+  })
+
+  socket.on('addNewProject', ()=> {
+    console.log("adding new project ");
+    addNewProject();
+    socket.emit('sendProjectsToClient', allProjects);
+  })
 });
 
 io.listen(socketPort);

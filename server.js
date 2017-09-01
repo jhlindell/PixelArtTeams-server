@@ -12,6 +12,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const users = require('./routes/users');
+const projects = require('./routes/projects');
 const apiPort = 8000;
 const socketPort = 7000;
 
@@ -20,6 +21,10 @@ var allProjects = [];
 addNewProject();
 addNewProject();
 addNewProject();
+
+function getProjectsFromDatabase(){
+  
+}
 
 function setupNewGrid(){
   let  newGrid = [];
@@ -47,6 +52,7 @@ function changePixel(pixel){
 
 io.on('connection', (socket) => {
   socket.on('joinRoom', (room)=> {
+    console.log('joining room: ', room);
     socket.join(room);
   });
 
@@ -54,7 +60,6 @@ io.on('connection', (socket) => {
     socket.leave(room);
   });
 
-  //user requests the grid
   socket.on('grid', (room)=>{
     socket.emit('gridUpdated', allProjects[room-1].grid);
   });
@@ -66,13 +71,17 @@ io.on('connection', (socket) => {
 
   socket.on('initialize', () => {
     socket.emit('sendProjectsToClient', allProjects);
-  })
+  });
 
   socket.on('addNewProject', ()=> {
-    console.log("adding new project ");
     addNewProject();
     socket.emit('sendProjectsToClient', allProjects);
-  })
+  });
+
+  socket.on('saveProject', (projectid)=> {
+    let gridString = JSON.stringify(allProjects[projectid - 1].grid);
+    let convertedString = gridString.replace(/[\"]/g, "'");
+  });
 });
 
 io.listen(socketPort);
@@ -83,6 +92,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 app.use('/api/users', users);
+app.use('/api/projects', projects);
 
 app.use((req, res, next) => {
   res.sendStatus(404);

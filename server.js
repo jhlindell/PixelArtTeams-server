@@ -13,17 +13,35 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const users = require('./routes/users');
 const projects = require('./routes/projects');
+const axios = require('axios');
 const apiPort = 8000;
 const socketPort = 7000;
 
 //setup initial pixel grid for socket to track
 var allProjects = [];
-addNewProject();
-addNewProject();
-addNewProject();
+// addNewProject();
+// addNewProject();
+// addNewProject();
+getProjectsFromDatabase();
 
-function getProjectsFromDatabase(){
-  
+async function getProjectsFromDatabase(){
+  let responseData;
+  await axios.get('http://localhost:8000/api/projects')
+    .then(response => {
+      responseData = response.data;
+    });
+
+    responseData.forEach((project) => {
+      let object = {};
+      object.id = project.id;
+      object.project_name = project.project_name;
+      let grid = JSON.parse(project.grid);
+      object.grid = grid;
+      // console.log(object);
+      allProjects.push(object);
+    })
+  console.log(allProjects);
+  // JSON.parse(localStorage.getItem('sessionPersistance'))
 }
 
 function setupNewGrid(){

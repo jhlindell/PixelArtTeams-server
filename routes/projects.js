@@ -21,7 +21,6 @@ router.post('/', (req,res,next) => {
     .insert(project)
     .returning("*")
     .then(result => {
-      console.log(result[0]);
       res.send(result[0]);
     })
     .catch(err => {

@@ -20,7 +20,6 @@ const socketPort = 7000;
 
 //setup initial pixel grid for socket to track
 var allProjects = [];
-
 getProjectsFromDatabase();
 
 function getProjectsFromDatabase(){
@@ -31,9 +30,11 @@ function getProjectsFromDatabase(){
         let object = {};
         object.id = response[i].id;
         object.project_name = response[i].project_name;
+        object.xsize = response[i].xsize;
+        object.ysize = response[i].ysize;
         let grid;
         if(response[i].grid === ''){
-          grid = setupNewGrid();
+          grid = setupNewGrid(object.xsize, object.ysize);
         } else {
           grid = JSON.parse(response[i].grid);
         }
@@ -56,7 +57,7 @@ async function sendProjectToDatabase(id){
   project.grid = convertedString;
   await knex('projects')
     .where('id', id)
-    .update({grid: gridString})
+    .update({grid: gridString, ysize: project.ysize, xsize: project.xsize})
     .catch(err => {
       console.log(err);
     })
@@ -97,12 +98,13 @@ async function addNewProject(obj){
   let newProject = {};
   newProject.project_name = obj.name;
   newProject.grid = '';
+  newProject.ysize = obj.y;
+  newProject.xsize = obj.x;
 
   await knex('projects')
     .insert(newProject)
     .returning("*")
     .then(result => {
-      // console.log(result[0]);
       newProject.id = result[0].id;
       newProject.grid = setupNewGrid(obj.x, obj.y);
       allProjects.push(newProject);

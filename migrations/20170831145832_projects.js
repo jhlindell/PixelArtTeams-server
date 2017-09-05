@@ -4,6 +4,8 @@ exports.up = function(knex, Promise) {
     table.increments('id');
     table.string('project_name').defaultTo('');
     table.text('grid').defaultTo('');
+    table.integer('xsize').defaultTo(20);
+    table.integer('ysize').defaultTo(20);
   })
 };
 

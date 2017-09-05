@@ -22,6 +22,7 @@ const socketPort = 7000;
 var allProjects = [];
 getProjectsFromDatabase();
 
+
 function getProjectsFromDatabase(){
   knex('projects')
     .select()
@@ -40,6 +41,7 @@ function getProjectsFromDatabase(){
         }
         object.grid = grid;
         allProjects.push(object);
+        console.log(allProjects.length);
       }
     })
     .catch(err => {
@@ -112,7 +114,23 @@ async function addNewProject(obj){
     .catch(err => {
       next(err);
     });
+}
 
+function sendFinishedProjectToDatabase(projectid){
+  let project = getProjectById(projectid);
+}
+
+async function deleteUnfinishedProject(projectid){
+  await knex('projects')
+    .where('id', projectid)
+    .delete()
+    .returning('id')
+    .then(result => {
+      console.log('deleting: ', result);
+    })
+    .catch(err => {
+      console.log(err);
+    })
 }
 
 function changePixel(pixel){
@@ -129,7 +147,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('grid', (room)=>{
-    socket.emit('gridUpdated', allProjects[room-1].grid);
+    let index = getIndexOfProject(room);
+    socket.emit('gridUpdated', allProjects[index].grid);
   });
 
   socket.on('pixel', (pixel)=> {
@@ -143,14 +162,31 @@ io.on('connection', (socket) => {
 
   socket.on('addNewProject', (obj)=> {
     addNewProject(obj).then(() => {
-    socket.emit('sendProjectsToClient', allProjects);
+      socket.emit('sendProjectsToClient', allProjects);
     })
   });
 
   socket.on('saveProject', (projectid)=> {
-    sendProjectToDatabase(projectid);
+    sendProjectToDatabase(projectid).then(()=> {
+      socket.emit('sendProjectsToClient', allProjects);
+    });
+  });
+
+  socket.on('deleteProject', (projectid)=> {
+    deleteUnfinishedProject(projectid).then(() => {
+      let index = getIndexOfProject(projectid);
+      allProjects.splice(index,1);
+      let firstProjectId = allProjects[0].id;
+      socket.emit('changeCurrentProject', firstProjectId);
+      socket.emit('sendProjectsToClient', allProjects);
+    });
+  })
+
+  socket.on('sendFinishedProject', (projectid)=> {
+    sendFinishedProjectToDatabase(projectid);
     socket.emit('sendProjectsToClient', allProjects);
   });
+
 });
 
 io.listen(socketPort);

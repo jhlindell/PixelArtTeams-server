@@ -15,4 +15,22 @@ router.get('/', (req,res,next) => {
     });
 });
 
+router.post('/', (req,res,next) => {
+  var project = req.body;
+  knex('projects')
+    .insert(project)
+    .returning("*")
+    .then(result => {
+      console.log(result[0]);
+      res.send(result[0]);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+
+router.patch('/id', (req,res,next) => {
+
+});
+
 module.exports = router;

@@ -8,6 +8,7 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+const knex = require('./knex');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const path = require('path');
@@ -19,36 +20,72 @@ const socketPort = 7000;
 
 //setup initial pixel grid for socket to track
 var allProjects = [];
-// addNewProject();
-// addNewProject();
-// addNewProject();
+
 getProjectsFromDatabase();
 
-async function getProjectsFromDatabase(){
-  let responseData;
-  await axios.get('http://localhost:8000/api/projects')
-    .then(response => {
-      responseData = response.data;
-    });
-
-    responseData.forEach((project) => {
-      let object = {};
-      object.id = project.id;
-      object.project_name = project.project_name;
-      let grid = JSON.parse(project.grid);
-      object.grid = grid;
-      // console.log(object);
-      allProjects.push(object);
+function getProjectsFromDatabase(){
+  knex('projects')
+    .select()
+    .then((response) => {
+      for(let i = 0; i < response.length; i++){
+        let object = {};
+        object.id = response[i].id;
+        object.project_name = response[i].project_name;
+        let grid;
+        if(response[i].grid === ''){
+          grid = setupNewGrid();
+        } else {
+          grid = JSON.parse(response[i].grid);
+        }
+        object.grid = grid;
+        allProjects.push(object);
+      }
     })
-  console.log(allProjects);
-  // JSON.parse(localStorage.getItem('sessionPersistance'))
+    .catch(err => {
+      console.log(err);
+    });
 }
 
-function setupNewGrid(){
+async function sendProjectToDatabase(id){
+  let project = getProjectById(id);
+  let object = {};
+  object.id = project.id;
+  object.project_name = project.project_name;
+  let gridString = JSON.stringify(project.grid);
+  let convertedString = gridString.replace(/[\"]/g, "'");
+  project.grid = convertedString;
+  await knex('projects')
+    .where('id', id)
+    .update({grid: gridString})
+    .catch(err => {
+      console.log(err);
+    })
+    .then(() => {
+      project.grid = JSON.parse(gridString);
+    })
+}
+
+function getProjectById(id){
+  for(let i = 0; i < allProjects.length; i++){
+    if(allProjects[i].id === id){
+      return allProjects[i];
+    }
+  }
+}
+
+function getIndexOfProject(id){
+  for(let i = 0; i < allProjects.length; i++) {
+    if(allProjects[i].id === id){
+      return i;
+    }
+  }
+}
+
+function setupNewGrid(x=20, y=20){
   let  newGrid = [];
-  for (var i = 0; i < 20; i++) {
+  for (var i = 0; i < y; i++) {
     let row = [];
-    for (var j = 0; j < 20; j++) {
+    for (var j = 0; j < x; j++) {
       row.push('#FFF');
     }
     newGrid.push(row);
@@ -56,21 +93,32 @@ function setupNewGrid(){
   return newGrid;
 }
 
-function addNewProject(){
+async function addNewProject(obj){
   let newProject = {};
-  newProject.id = allProjects.length + 1;
-  newProject.grid = setupNewGrid();
-  newProject.projectName = "Project " + newProject.id;
-  allProjects.push(newProject);
+  newProject.project_name = obj.name;
+  newProject.grid = '';
+
+  await knex('projects')
+    .insert(newProject)
+    .returning("*")
+    .then(result => {
+      // console.log(result[0]);
+      newProject.id = result[0].id;
+      newProject.grid = setupNewGrid(obj.x, obj.y);
+      allProjects.push(newProject);
+    })
+    .catch(err => {
+      next(err);
+    });
+
 }
 
 function changePixel(pixel){
-  allProjects[pixel.project-1].grid[pixel.y][pixel.x] = pixel.color;
+  allProjects[getIndexOfProject(pixel.project)].grid[pixel.y][pixel.x] = pixel.color;
 }
 
 io.on('connection', (socket) => {
   socket.on('joinRoom', (room)=> {
-    console.log('joining room: ', room);
     socket.join(room);
   });
 
@@ -91,14 +139,15 @@ io.on('connection', (socket) => {
     socket.emit('sendProjectsToClient', allProjects);
   });
 
-  socket.on('addNewProject', ()=> {
-    addNewProject();
+  socket.on('addNewProject', (obj)=> {
+    addNewProject(obj).then(() => {
     socket.emit('sendProjectsToClient', allProjects);
+    })
   });
 
   socket.on('saveProject', (projectid)=> {
-    let gridString = JSON.stringify(allProjects[projectid - 1].grid);
-    let convertedString = gridString.replace(/[\"]/g, "'");
+    sendProjectToDatabase(projectid);
+    socket.emit('sendProjectsToClient', allProjects);
   });
 });
 

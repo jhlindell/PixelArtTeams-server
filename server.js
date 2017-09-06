@@ -116,8 +116,18 @@ async function addNewProject(obj){
     });
 }
 
-function sendFinishedProjectToDatabase(projectid){
+async function sendFinishedProjectToDatabase(projectid){
   let project = getProjectById(projectid);
+  let index = getIndexOfProject(projectid);
+  await knex('projects')
+  .where('id', project.id)
+  .update({is_finished: true})
+  .catch(err => {
+    console.log(err);
+  })
+  .then(() => {
+    allProjects.splice(index, 1);
+  })
 }
 
 async function deleteUnfinishedProject(projectid){
@@ -131,6 +141,31 @@ async function deleteUnfinishedProject(projectid){
     .catch(err => {
       console.log(err);
     })
+}
+
+async function galleryArt() {
+  let gallery = [];
+  return await knex('projects')
+  .select()
+  .where('is_finished', true)
+  .then((response) => {
+    for(let i = 0; i < response.length; i++){
+      let object = {};
+      object.id = response[i].id;
+      object.project_name = response[i].project_name;
+      object.xsize = response[i].xsize;
+      object.ysize = response[i].ysize;
+      let grid;
+      grid = JSON.parse(response[i].grid);
+      object.grid = grid;
+      gallery.push(object);
+    }
+    return gallery;
+  })
+  .catch(err => {
+    console.log(err);
+  });
+
 }
 
 function changePixel(pixel){
@@ -160,6 +195,12 @@ io.on('connection', (socket) => {
     socket.emit('sendProjectsToClient', allProjects);
   });
 
+  socket.on('getArtForGallery', ()=> {
+    galleryArt().then((result) => {
+      socket.emit("sendingGallery", result);
+    });
+  });
+
   socket.on('addNewProject', (obj)=> {
     addNewProject(obj).then(() => {
       socket.emit('sendProjectsToClient', allProjects);
@@ -186,11 +227,13 @@ io.on('connection', (socket) => {
   })
 
   socket.on('sendFinishedProject', (projectid)=> {
-    sendFinishedProjectToDatabase(projectid);
-    socket.emit('sendProjectsToClient', allProjects);
-    socket.broadcast.emit('sendProjectsToClient', allProjects);
+    sendFinishedProjectToDatabase(projectid).then(()=> {
+      let firstProjectId = allProjects[0].id;
+      socket.emit('changeCurrentProject', firstProjectId);
+      socket.emit('sendProjectsToClient', allProjects);
+      socket.broadcast.emit('sendProjectsToClient', allProjects);
+    });
   });
-
 });
 
 io.listen(socketPort);

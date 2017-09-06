@@ -26,6 +26,7 @@ getProjectsFromDatabase();
 function getProjectsFromDatabase(){
   knex('projects')
     .select()
+    .where('is_finished', false)
     .then((response) => {
       for(let i = 0; i < response.length; i++){
         let object = {};
@@ -41,7 +42,6 @@ function getProjectsFromDatabase(){
         }
         object.grid = grid;
         allProjects.push(object);
-        console.log(allProjects.length);
       }
     })
     .catch(err => {
@@ -163,28 +163,32 @@ io.on('connection', (socket) => {
   socket.on('addNewProject', (obj)=> {
     addNewProject(obj).then(() => {
       socket.emit('sendProjectsToClient', allProjects);
+      socket.broadcast.emit('sendProjectsToClient', allProjects);
     })
   });
 
   socket.on('saveProject', (projectid)=> {
     sendProjectToDatabase(projectid).then(()=> {
       socket.emit('sendProjectsToClient', allProjects);
+      socket.broadcast.emit('sendProjectsToClient', allProjects);
     });
   });
 
   socket.on('deleteProject', (projectid)=> {
     deleteUnfinishedProject(projectid).then(() => {
       let index = getIndexOfProject(projectid);
-      allProjects.splice(index,1);
+      allProjects.splice(index, 1);
       let firstProjectId = allProjects[0].id;
       socket.emit('changeCurrentProject', firstProjectId);
       socket.emit('sendProjectsToClient', allProjects);
+      socket.broadcast.emit('sendProjectsToClient', allProjects);
     });
   })
 
   socket.on('sendFinishedProject', (projectid)=> {
     sendFinishedProjectToDatabase(projectid);
     socket.emit('sendProjectsToClient', allProjects);
+    socket.broadcast.emit('sendProjectsToClient', allProjects);
   });
 
 });

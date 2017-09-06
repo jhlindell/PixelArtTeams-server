@@ -6,6 +6,7 @@ exports.up = function(knex, Promise) {
     table.text('grid').defaultTo('');
     table.integer('xsize').defaultTo(20);
     table.integer('ysize').defaultTo(20);
+    table.boolean('is_finished').defaultTo(false);
   })
 };
 

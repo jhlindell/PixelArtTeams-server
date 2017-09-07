@@ -4,7 +4,6 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
-
 const express = require('express');
 const app = express();
 const https = require('https').Server(app);
@@ -176,7 +175,7 @@ function changePixel(pixel){
   allProjects[getIndexOfProject(pixel.project)].grid[pixel.y][pixel.x] = pixel.color;
 }
 
-io.origins(['https://pixelart-app.herokuapp.com:8000/']);
+io.origins(['https://pixelart-app.herokuapp.com']);
 
 io.on('connection', (socket) => {
   socket.on('joinRoom', (room)=> {

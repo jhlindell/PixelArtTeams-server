@@ -6,8 +6,8 @@ if (process.env.NODE_ENV !== 'production') {
 
 const express = require('express');
 const app = express();
-const https = require('https').Server(app);
-const io = require('socket.io')(https);
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
 const knex = require('./knex');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');

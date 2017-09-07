@@ -175,7 +175,7 @@ function changePixel(pixel){
   allProjects[getIndexOfProject(pixel.project)].grid[pixel.y][pixel.x] = pixel.color;
 }
 
-io.origins(['https://pixelart-app.herokuapp.com']);
+// io.origins(['https://pixelart-app.herokuapp.com']);
 
 io.on('connection', (socket) => {
   socket.on('joinRoom', (room)=> {

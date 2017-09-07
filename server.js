@@ -7,8 +7,8 @@ if (process.env.NODE_ENV !== 'production') {
 
 const express = require('express');
 const app = express();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const https = require('https').Server(app);
+const io = require('socket.io')(https);
 const knex = require('./knex');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -176,7 +176,7 @@ function changePixel(pixel){
   allProjects[getIndexOfProject(pixel.project)].grid[pixel.y][pixel.x] = pixel.color;
 }
 
-io.origins(['pixelart-app.herokuapp.com/:7000']);
+io.origins(['pixelart-app.herokuapp.com/']);
 
 io.on('connection', (socket) => {
   socket.on('joinRoom', (room)=> {

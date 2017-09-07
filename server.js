@@ -242,9 +242,9 @@ io.listen(socketPort);
 console.log("Now listening on port " + socketPort);
 
 //api server
+app.use(cors());
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use(cors());
 
 app.use('/api/users', users);
 app.use('/api/projects', projects);

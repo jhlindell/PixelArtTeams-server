@@ -4,6 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
+
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
@@ -15,6 +16,7 @@ const path = require('path');
 const users = require('./routes/users');
 const projects = require('./routes/projects');
 const axios = require('axios');
+const cors = require('cors');
 const apiPort = 8000;
 const socketPort = 7000;
 
@@ -242,6 +244,7 @@ console.log("Now listening on port " + socketPort);
 //api server
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(cors());
 
 app.use('/api/users', users);
 app.use('/api/projects', projects);

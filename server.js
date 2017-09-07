@@ -6,8 +6,8 @@ if (process.env.NODE_ENV !== 'production') {
 
 const express = require('express');
 const app = express();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 const knex = require('./knex');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -241,8 +241,8 @@ io.on('connection', (socket) => {
   });
 });
 
-io.listen(process.env.PORT || socketPort);
-console.log("Now listening on port " + socketPort);
+// io.listen(process.env.PORT || socketPort);
+// console.log("Now listening on port " + process.env.PORT || socketPort);
 
 //api server
 
@@ -257,5 +257,5 @@ app.use((req, res, next) => {
 });
 
 app.listen(process.env.PORT || apiPort, () => {
-  console.log("Now listening on port " + apiPort);
+  console.log("Now listening on port " + process.env.PORT || apiPort);
 });

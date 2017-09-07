@@ -20,6 +20,8 @@ const cors = require('cors');
 const apiPort = 8000;
 const socketPort = 7000;
 
+app.use(cors());
+
 //setup initial pixel grid for socket to track
 var allProjects = [];
 getProjectsFromDatabase();
@@ -242,7 +244,7 @@ io.listen(socketPort);
 console.log("Now listening on port " + socketPort);
 
 //api server
-app.use(cors());
+
 app.use(bodyParser.json());
 app.use(cookieParser());
 

@@ -241,7 +241,7 @@ io.on('connection', (socket) => {
   });
 });
 
-io.listen(socketPort);
+io.listen(process.env.PORT || socketPort);
 console.log("Now listening on port " + socketPort);
 
 //api server
@@ -256,6 +256,6 @@ app.use((req, res, next) => {
   res.sendStatus(404);
 });
 
-app.listen(apiPort, () => {
+app.listen(process.env.PORT || apiPort, () => {
   console.log("Now listening on port " + apiPort);
 });

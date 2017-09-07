@@ -19,7 +19,7 @@ const cors = require('cors');
 const apiPort = 8000;
 const socketPort = 7000;
 
-app.use(cors({ origin: '*' }));
+app.use(cors());
 
 //setup initial pixel grid for socket to track
 var allProjects = [];

@@ -20,7 +20,7 @@ const cors = require('cors');
 const apiPort = 8000;
 const socketPort = 7000;
 
-app.use(cors());
+app.use(cors({ origin: '*' }));
 
 //setup initial pixel grid for socket to track
 var allProjects = [];
@@ -176,7 +176,7 @@ function changePixel(pixel){
   allProjects[getIndexOfProject(pixel.project)].grid[pixel.y][pixel.x] = pixel.color;
 }
 
-io.origins(['https://pixelart-app.herokuapp.com/']);
+io.origins(['pixelart-app.herokuapp.com/:7000']);
 
 io.on('connection', (socket) => {
   socket.on('joinRoom', (room)=> {

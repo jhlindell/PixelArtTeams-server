@@ -20,6 +20,11 @@ const socketPort = 7000;
 
 const allowedOrigins = ["https://pixelart-app.herokuapp.com/art", "https://pixelart-app.herokuapp.com/gallery", "https://pixelart-app.herokuapp.com/"];
 
+// io.origins(['https://pixelart-app.herokuapp.com/*']);
+
+io.set('origins', '*:*');
+io.set('match origin protocol', true);
+
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", allowedOrigins);
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -182,7 +187,7 @@ function changePixel(pixel){
   allProjects[getIndexOfProject(pixel.project)].grid[pixel.y][pixel.x] = pixel.color;
 }
 
-io.origins(['https://pixelart-app.herokuapp.com/*']);
+
 
 io.on('connection', (socket) => {
   socket.on('joinRoom', (room)=> {

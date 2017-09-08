@@ -175,7 +175,7 @@ function changePixel(pixel){
   allProjects[getIndexOfProject(pixel.project)].grid[pixel.y][pixel.x] = pixel.color;
 }
 
-io.origins(['https://pixelart-app.herokuapp.com']);
+// io.origins(['https://pixelart-app.herokuapp.com']);
 
 io.on('connection', (socket) => {
   socket.on('joinRoom', (room)=> {
@@ -241,8 +241,8 @@ io.on('connection', (socket) => {
   });
 });
 
-// io.listen(process.env.PORT || socketPort);
-// console.log("Now listening on port " + process.env.PORT || socketPort);
+io.listen(socketPort);
+console.log("Now listening on port " + socketPort);
 
 //api server
 

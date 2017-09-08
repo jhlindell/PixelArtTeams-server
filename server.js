@@ -20,13 +20,13 @@ const socketPort = 7000;
 
 const allowedOrigins = ["https://pixelart-app.herokuapp.com/art", "https://pixelart-app.herokuapp.com/gallery", "https://pixelart-app.herokuapp.com/"];
 
-io.use((req, res, next) => {
+app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", allowedOrigins);
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   res.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PATCH, PUT" );
   next();
 });
-io.use(cors());
+app.use(cors());
 
 //setup initial pixel grid for socket to track
 var allProjects = [];

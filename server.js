@@ -4,8 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
-const express = require('express');
-const app = express();
+const app = require('express')();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const knex = require('./knex');
@@ -175,7 +174,7 @@ function changePixel(pixel){
   allProjects[getIndexOfProject(pixel.project)].grid[pixel.y][pixel.x] = pixel.color;
 }
 
-// io.origins(['https://pixelart-app.herokuapp.com']);
+io.origins(['https://pixelart-app.herokuapp.com']);
 
 io.on('connection', (socket) => {
   socket.on('joinRoom', (room)=> {
@@ -241,7 +240,7 @@ io.on('connection', (socket) => {
   });
 });
 
-io.listen(socketPort);
+server.listen(socketPort);
 console.log("Now listening on port " + socketPort);
 
 //api server

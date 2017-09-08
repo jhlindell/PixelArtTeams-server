@@ -240,9 +240,9 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(socketPort);
-console.log("Now listening on port " + socketPort);
-
+server.listen(process.env.PORT || socketPort, () => {
+console.log("Now listening on port " + process.env.PORT || socketPort);
+});
 //api server
 
 app.use(bodyParser.json());

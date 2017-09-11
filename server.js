@@ -171,10 +171,12 @@ async function galleryArt() {
       object.xsize = response[i].xsize;
       object.ysize = response[i].ysize;
       let grid;
+      debugger;
       grid = JSON.parse(response[i].grid);
       object.grid = grid;
       gallery.push(object);
     }
+    console.log("gallery: ", gallery);
     return gallery;
   })
   .catch(err => {
@@ -200,6 +202,7 @@ io.on('connection', (socket) => {
 
   socket.on('grid', (room)=>{
     let index = getIndexOfProject(room);
+    console.log("room: ", room, "index: ", index);
     socket.emit('gridUpdated', allProjects[index].grid);
   });
 
@@ -244,12 +247,14 @@ io.on('connection', (socket) => {
   })
 
   socket.on('sendFinishedProject', (projectid)=> {
+
     sendFinishedProjectToDatabase(projectid).then(()=> {
       let firstProjectId = allProjects[0].id;
       socket.emit('changeCurrentProject', firstProjectId);
       socket.emit('sendProjectsToClient', allProjects);
       socket.broadcast.emit('sendProjectsToClient', allProjects);
     });
+
   });
 });
 

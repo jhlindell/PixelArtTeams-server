@@ -23,7 +23,7 @@ const allowedOrigins = ["https://pixelart-app.herokuapp.com/art", "https://pixel
 
 
 io.set('origins', '*:*');
-io.set('match origin protocol', true);
+// io.set('match origin protocol', true);
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", allowedOrigins);
@@ -59,7 +59,6 @@ function getProjectsFromDatabase(){
         object.grid = grid;
         allProjects.push(object);
       }
-      console.log(allProjects);
     })
     .catch(err => {
       console.log(err);
@@ -68,9 +67,6 @@ function getProjectsFromDatabase(){
 
 async function sendProjectToDatabase(id){
   let project = getProjectById(id);
-  let object = {};
-  object.id = project.id;
-  object.project_name = project.project_name;
   let gridString = JSON.stringify(project.grid);
   let convertedString = gridString.replace(/[\"]/g, "'");
   project.grid = convertedString;
@@ -190,7 +186,6 @@ function changePixel(pixel){
   allProjects[getIndexOfProject(pixel.project)].grid[pixel.y][pixel.x] = pixel.color;
 }
 
-
 io.on('connection', (socket) => {
   socket.on('joinRoom', (room)=> {
     socket.join(room);
@@ -246,14 +241,14 @@ io.on('connection', (socket) => {
   })
 
   socket.on('sendFinishedProject', (projectid)=> {
-
+    sendProjectToDatabase(projectid).then(() => {
     sendFinishedProjectToDatabase(projectid).then(()=> {
       let firstProjectId = allProjects[0].id;
       socket.emit('changeCurrentProject', firstProjectId);
       socket.emit('sendProjectsToClient', allProjects);
       socket.broadcast.emit('sendProjectsToClient', allProjects);
     });
-
+  });
   });
 });
 

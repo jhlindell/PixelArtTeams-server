@@ -20,7 +20,7 @@ const socketPort = 7000;
 
 const allowedOrigins = ["https://pixelart-app.herokuapp.com/art", "https://pixelart-app.herokuapp.com/gallery", "https://pixelart-app.herokuapp.com/"];
 
-// io.origins(['https://pixelart-app.herokuapp.com/*']);
+
 
 io.set('origins', '*:*');
 io.set('match origin protocol', true);
@@ -33,7 +33,8 @@ app.use((req, res, next) => {
 });
 app.use(cors());
 
-//setup initial pixel grid for socket to track
+
+
 var allProjects = [];
 getProjectsFromDatabase();
 
@@ -176,7 +177,6 @@ async function galleryArt() {
       object.grid = grid;
       gallery.push(object);
     }
-    console.log("gallery: ", gallery);
     return gallery;
   })
   .catch(err => {
@@ -202,7 +202,6 @@ io.on('connection', (socket) => {
 
   socket.on('grid', (room)=>{
     let index = getIndexOfProject(room);
-    console.log("room: ", room, "index: ", index);
     socket.emit('gridUpdated', allProjects[index].grid);
   });
 

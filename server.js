@@ -59,6 +59,7 @@ function getProjectsFromDatabase(){
         object.grid = grid;
         allProjects.push(object);
       }
+      console.log(allProjects);
     })
     .catch(err => {
       console.log(err);
@@ -188,7 +189,6 @@ async function galleryArt() {
 function changePixel(pixel){
   allProjects[getIndexOfProject(pixel.project)].grid[pixel.y][pixel.x] = pixel.color;
 }
-
 
 
 io.on('connection', (socket) => {

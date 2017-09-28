@@ -1,0 +1,4 @@
+{"x":18,"y":9,"color":"#000","project":0,"level":"info","message":"pixel clicked","timestamp":"2017-09-28T17:12:23.721Z"}
+{"x":19,"y":18,"color":"#000","project":1,"level":"info","message":"pixel clicked","timestamp":"2017-09-28T17:13:06.017Z"}
+{"x":18,"y":14,"color":"#000","project":0,"level":"info","message":"pixel clicked","timestamp":"2017-09-28T18:38:05.485Z"}
+{"level":"error","message":"project index not found","timestamp":"2017-09-28T18:38:05.486Z"}

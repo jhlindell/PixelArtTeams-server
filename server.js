@@ -15,12 +15,17 @@ const users = require('./routes/users');
 const projects = require('./routes/projects');
 const axios = require('axios');
 const cors = require('cors');
-const apiPort = 8000;
+// const apiPort = 8000;
+const winston = require('winston');
 const socketPort = 7000;
 
 const allowedOrigins = ["https://pixelart-app.herokuapp.com/art", "https://pixelart-app.herokuapp.com/gallery", "https://pixelart-app.herokuapp.com/"];
 
-
+var logger = new (winston.Logger)({
+    transports: [
+      new (winston.transports.File)({ filename: 'pixel.log' })
+    ]
+  });
 
 io.set('origins', '*:*');
 // io.set('match origin protocol', true);
@@ -31,13 +36,11 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PATCH, PUT" );
   next();
 });
+
 app.use(cors());
-
-
 
 var allProjects = [];
 getProjectsFromDatabase();
-
 
 function getProjectsFromDatabase(){
   knex('projects')
@@ -95,6 +98,7 @@ function getIndexOfProject(id){
       return i;
     }
   }
+  return -1;
 }
 
 function setupNewGrid(x=20, y=20){
@@ -125,7 +129,7 @@ async function addNewProject(obj){
       allProjects.push(newProject);
     })
     .catch(err => {
-      next(err);
+      console.log(err);
     });
 }
 
@@ -183,7 +187,18 @@ async function galleryArt() {
 }
 
 function changePixel(pixel){
-  allProjects[getIndexOfProject(pixel.project)].grid[pixel.y][pixel.x] = pixel.color;
+  logger.info("pixel clicked", pixel);
+  try {
+    let index = getIndexOfProject(pixel.project);
+    if(index === -1){
+      throw 'project index not found';
+    } else {
+      allProjects[getIndexOfProject(pixel.project)].grid[pixel.y][pixel.x] = pixel.color;
+    }
+  }
+  catch(err) {
+    logger.error(err);
+  }
 }
 
 io.on('connection', (socket) => {
@@ -242,13 +257,13 @@ io.on('connection', (socket) => {
 
   socket.on('sendFinishedProject', (projectid)=> {
     sendProjectToDatabase(projectid).then(() => {
-    sendFinishedProjectToDatabase(projectid).then(()=> {
-      let firstProjectId = allProjects[0].id;
-      socket.emit('changeCurrentProject', firstProjectId);
-      socket.emit('sendProjectsToClient', allProjects);
-      socket.broadcast.emit('sendProjectsToClient', allProjects);
+      sendFinishedProjectToDatabase(projectid).then(()=> {
+        let firstProjectId = allProjects[0].id;
+        socket.emit('changeCurrentProject', firstProjectId);
+        socket.emit('sendProjectsToClient', allProjects);
+        socket.broadcast.emit('sendProjectsToClient', allProjects);
+      });
     });
-  });
   });
 });
 

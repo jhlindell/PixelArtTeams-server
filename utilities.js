@@ -68,6 +68,9 @@ function getIndexOfProject(projectsArray, id){
 }
 
 function setupNewGrid(x=20, y=20){
+  if(x < 1 || y < 1){
+    return [];
+  }
   let  newGrid = [];
   for (var i = 0; i < y; i++) {
     let row = [];
@@ -79,14 +82,14 @@ function setupNewGrid(x=20, y=20){
   return newGrid;
 }
 
-async function addNewProject(projectsArray, obj){
+function addNewProject(projectsArray, obj){
   let newProject = {};
   newProject.project_name = obj.name;
   newProject.grid = '';
   newProject.ysize = obj.y;
   newProject.xsize = obj.x;
 
-  await knex('projects')
+  return knex('projects')
     .insert(newProject)
     .returning("*")
     .then(result => {
@@ -120,7 +123,8 @@ async function deleteUnfinishedProject(projectid){
     .delete()
     .returning('id')
     .then(result => {
-      logger.error('deleting: ', result);
+      logger.info('deleting: ', result);
+      return result;
     })
     .catch(err => {
       logger.error(err);
@@ -154,7 +158,6 @@ async function galleryArt() {
 }
 
 function changePixel(projectsArray, pixel){
-  logger.info("pixel clicked", pixel);
   try {
     let index = getIndexOfProject(projectsArray, pixel.project);
     if(index === -1) {

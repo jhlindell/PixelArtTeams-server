@@ -94,7 +94,7 @@ const runProgram = (allProjects) => {
     });
 
     socket.on('saveProject', (projectid)=> {
-      sendProjectToDatabase(projectid).then(()=> {
+      sendProjectToDatabase(allProjects, projectid).then(()=> {
         socket.emit('sendProjectsToClient', allProjects);
         socket.broadcast.emit('sendProjectsToClient', allProjects);
       });
@@ -112,7 +112,7 @@ const runProgram = (allProjects) => {
     })
 
     socket.on('sendFinishedProject', (projectid)=> {
-      sendProjectToDatabase(projectid).then(() => {
+      sendProjectToDatabase(allProjects, projectid).then(() => {
         sendFinishedProjectToDatabase(allProjects, projectid).then(()=> {
           let firstProjectId = allProjects[0].id;
           socket.emit('changeCurrentProject', firstProjectId);

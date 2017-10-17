@@ -20,17 +20,13 @@ const {
 const app = require('express')();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
-const knex = require('./knex');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const path = require('path');
-const users = require('./routes/users');
-const projects = require('./routes/projects');
+const router = require('./router');
 const axios = require('axios');
 const cors = require('cors');
-// const apiPort = 8000;
 const winston = require('winston');
 const socketPort = 7000;
+const apiPort = 8000;
 
 const allowedOrigins = ["https://pixelart-app.herokuapp.com/art", "https://pixelart-app.herokuapp.com/gallery", "https://pixelart-app.herokuapp.com/"];
 
@@ -43,14 +39,16 @@ const logger = new (winston.Logger)({
 io.set('origins', '*:*');
 // io.set('match origin protocol', true);
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", allowedOrigins);
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PATCH, PUT" );
-  next();
-});
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", allowedOrigins);
+//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//   res.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PATCH, PUT" );
+//   next();
+// });
 
 app.use(cors());
+app.use(bodyParser.json());
+router(app);
 
 getProjectsFromDatabase().then((allProjects) => {
   runProgram(allProjects);
@@ -124,23 +122,17 @@ const runProgram = (allProjects) => {
   });
 
   io.listen(process.env.PORT || socketPort, () => {
-    console.log("Now listening on port " + process.env.PORT || socketPort);
+    console.log("Now listening on port " + socketPort);
   });
 
 };
 
 //api server
 
-app.use(bodyParser.json());
-app.use(cookieParser());
-
-app.use('/api/users', users);
-app.use('/api/projects', projects);
+app.listen(apiPort, () => {
+  console.log("Now listening on port " + apiPort);
+});
 
 app.use((req, res, next) => {
   res.sendStatus(404);
 });
-
-// app.listen(process.env.PORT || apiPort, () => {
-//   console.log("Now listening on port " + process.env.PORT || apiPort);
-// });

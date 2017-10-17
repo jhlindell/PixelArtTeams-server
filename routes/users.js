@@ -20,7 +20,10 @@ router.post('/register', (req,res,next) => {
     .then((response)=>{
       delete response.hashed_password;
       res.send(response[0]);
-    });
+    })
+    .catch((err) => {
+      next(err);
+    })
   });
 });
 
@@ -51,6 +54,11 @@ router.post('/login', (req,res,next) => {
         return res.status(400).send('Bad username or password');
       }
     });
+});
+
+router.get('/', (req, res, next) => {
+  console.log("route hit");
+  res.send("success!");
 });
 
 module.exports = router;

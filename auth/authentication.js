@@ -24,7 +24,7 @@ exports.signup = function(req, res, next) {
   if (!email || !password || !username) {
     return res.status(422).send({error: 'You must provide an email, password and username'});
   }
-  
+
   return knex('users')
     .select('email')
     .where('email', email)
@@ -46,11 +46,13 @@ exports.signup = function(req, res, next) {
               .returning(['email', 'username', 'user_id', 'isMod'])
               .then((user) => {
                 res.json({token: tokenForUser(user[0])});
+                console.log("signed up user: ", user[0]);
           })
         }
         })
     }
   }).catch(err => {
-    return next(err);
+    return res.json({ err });
+    // return next(err);
   })
 }

@@ -1,5 +1,7 @@
 const knex = require('./knex');
 const winston = require('winston');
+const jwt = require('jwt-simple');
+require('dotenv').config();
 const logger = new (winston.Logger)({
     transports: [
       new (winston.transports.File)({ filename: 'pixel.log' })
@@ -171,6 +173,11 @@ function changePixel(projectsArray, pixel){
   }
 }
 
+function getIdFromToken(token){
+  let decodedToken = jwt.decode(token, process.env.JWT_KEY);
+  return decodedToken.sub;
+}
+
 module.exports = {
   getProjectsFromDatabase,
   sendProjectToDatabase,
@@ -181,5 +188,6 @@ module.exports = {
   sendFinishedProjectToDatabase,
   deleteUnfinishedProject,
   galleryArt,
-  changePixel
+  changePixel,
+  getIdFromToken
 }

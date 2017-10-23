@@ -1,7 +1,9 @@
 process.env.NODE_ENV = 'test';
 const knex = require('../knex');
 const chai = require('chai');
+require('dotenv').config();
 const assert = chai.assert;
+const jwt = require('jwt-simple');
 const {
   getProjectsFromDatabase,
   sendProjectToDatabase,
@@ -12,7 +14,8 @@ const {
   sendFinishedProjectToDatabase,
   deleteUnfinishedProject,
   galleryArt,
-  changePixel
+  changePixel,
+  getIdFromToken
 } = require('../utilities');
 
 const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FFF","#FFF"],
@@ -144,4 +147,14 @@ describe('database tests', function(){
       assert.notEqual(grid1, grid2);
     });
   });
+});
+
+describe('auth tests', function(){
+  it('should properly grab the user_id off a token', function(){
+    let user = { email: 'bob@foo.com', username: 'Bob', user_id: 7, isMod: false };
+    const timestamp = new Date().getTime();
+    token = jwt.encode({ sub: user.user_id, iat: timestamp }, process.env.JWT_KEY);
+    tokenId = getIdFromToken(token);
+    assert.equal(tokenId, 7);
+  })
 });

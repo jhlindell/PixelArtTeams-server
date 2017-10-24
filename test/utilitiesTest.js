@@ -23,6 +23,10 @@ const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FF
 ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"]];
 
+const testUser = { email: 'bob@foo.com', username: 'Bob', user_id: 7, isMod: false };
+const timestamp = new Date().getTime();
+testToken = jwt.encode({ sub: testUser.user_id, iat: timestamp }, process.env.JWT_KEY);
+
 describe('setUpNewGrid', function(){
   it('should return an empty array if x or y are less than 1', function(){
     assert.deepEqual(setupNewGrid(0, 10), []);
@@ -67,7 +71,7 @@ describe('database tests', function(){
   describe('getProjectById function test', function(){
     it('should return the proper project when called', function(){
       return getProjectsFromDatabase().then((projects) =>{
-        assert.equal(getProjectById(projects, 1).id, 1);
+        assert.equal(getProjectById(projects, 1).project_id, 1);
       });
     });
   });
@@ -82,16 +86,11 @@ describe('database tests', function(){
 
   describe('addNewProject test', function (){
     it('should properly add a new project to the database', async function(){
-      // try {
       var results = await getProjectsFromDatabase();
       assert.equal(results.length, 1);
-      let probject = {name: 'foo', x: 20, y: 20};
+      let probject = { name: 'foo', x: 20, y: 20, token: testToken };
       await addNewProject(results, probject);
       assert.equal(results.length, 2);
-      // } catch(err) {
-      //   console.log(err);
-      //   // done(err);
-      // }
     });
   });
 
@@ -151,10 +150,7 @@ describe('database tests', function(){
 
 describe('auth tests', function(){
   it('should properly grab the user_id off a token', function(){
-    let user = { email: 'bob@foo.com', username: 'Bob', user_id: 7, isMod: false };
-    const timestamp = new Date().getTime();
-    token = jwt.encode({ sub: user.user_id, iat: timestamp }, process.env.JWT_KEY);
-    tokenId = getIdFromToken(token);
+    tokenId = getIdFromToken(testToken);
     assert.equal(tokenId, 7);
   })
 });

@@ -16,7 +16,7 @@ function getProjectsFromDatabase() {
       let projectArray = [];
       for(let i = 0; i < response.length; i++){
         let object = {};
-        object.id = response[i].id;
+        object.project_id = response[i].project_id;
         object.project_name = response[i].project_name;
         object.xsize = response[i].xsize;
         object.ysize = response[i].ysize;
@@ -42,7 +42,7 @@ async function sendProjectToDatabase(projectsArray, id){
   let convertedString = gridString.replace(/[\"]/g, "'");
   project.grid = convertedString;
   await knex('projects')
-    .where('id', id)
+    .where('project_id', id)
     .update({grid: gridString, ysize: project.ysize, xsize: project.xsize})
     .catch(err => {
       logger.error(err);
@@ -54,7 +54,7 @@ async function sendProjectToDatabase(projectsArray, id){
 
 function getProjectById(projectsArray, id){
   for(let i = 0; i < projectsArray.length; i++){
-    if(projectsArray[i].id === id){
+    if(projectsArray[i].project_id === id){
       return projectsArray[i];
     }
   }
@@ -62,7 +62,7 @@ function getProjectById(projectsArray, id){
 
 function getIndexOfProject(projectsArray, id){
   for(let i = 0; i < projectsArray.length; i++) {
-    if(projectsArray[i].id === id){
+    if(projectsArray[i].project_id === id){
       return i;
     }
   }
@@ -85,7 +85,10 @@ function setupNewGrid(x=20, y=20){
 }
 
 function addNewProject(projectsArray, obj){
+  let decodedToken = jwt.decode(obj.token, process.env.JWT_KEY);
+  let owner_id = decodedToken.sub;
   let newProject = {};
+  newProject.project_owner = owner_id;
   newProject.project_name = obj.name;
   newProject.grid = '';
   newProject.ysize = obj.y;
@@ -95,7 +98,7 @@ function addNewProject(projectsArray, obj){
     .insert(newProject)
     .returning("*")
     .then(result => {
-      newProject.id = result[0].id;
+      newProject.project_id = result[0].project_id;
       newProject.grid = setupNewGrid(obj.x, obj.y);
       projectsArray.push(newProject);
     })
@@ -108,7 +111,7 @@ async function sendFinishedProjectToDatabase(projectsArray, projectid){
   let project = getProjectById(projectsArray, projectid);
   let index = getIndexOfProject(projectsArray, projectid);
   await knex('projects')
-  .where('id', project.id)
+  .where('project_id', project.project_id)
   .update({is_finished: true})
   .catch(err => {
     logger.error(err);
@@ -121,9 +124,9 @@ async function sendFinishedProjectToDatabase(projectsArray, projectid){
 
 async function deleteUnfinishedProject(projectid){
   await knex('projects')
-    .where('id', projectid)
+    .where('project_id', projectid)
     .delete()
-    .returning('id')
+    .returning('project_id')
     .then(result => {
       logger.info('deleting: ', result);
       return result;
@@ -141,7 +144,7 @@ async function galleryArt() {
   .then((response) => {
     for(let i = 0; i < response.length; i++){
       let object = {};
-      object.id = response[i].id;
+      object.project_id = response[i].project_id;
       object.project_name = response[i].project_name;
       object.xsize = response[i].xsize;
       object.ysize = response[i].ysize;

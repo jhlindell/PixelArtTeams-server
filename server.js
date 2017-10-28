@@ -127,11 +127,9 @@ const runProgram = (allProjects) => {
   io.listen(process.env.PORT || socketPort, () => {
     console.log("Now listening on port " + socketPort);
   });
-
 };
 
 //api server
-
 app.listen(apiPort, () => {
   console.log("Now listening on port " + apiPort);
 });

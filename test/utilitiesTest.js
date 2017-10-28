@@ -152,5 +152,5 @@ describe('auth tests', function(){
   it('should properly grab the user_id off a token', function(){
     tokenId = getIdFromToken(testToken);
     assert.equal(tokenId, 7);
-  })
+  });
 });

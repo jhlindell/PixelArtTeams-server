@@ -105,7 +105,7 @@ const runProgram = (allProjects) => {
       deleteUnfinishedProject(projectid).then(() => {
         let index = getIndexOfProject(projectid);
         allProjects.splice(index, 1);
-        let firstProjectId = allProjects[0].id;
+        let firstProjectId = allProjects[0].project_id;
         socket.emit('changeCurrentProject', firstProjectId);
         socket.emit('sendProjectsToClient', allProjects);
         socket.broadcast.emit('sendProjectsToClient', allProjects);

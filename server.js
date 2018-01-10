@@ -19,14 +19,13 @@ const {
 
 const app = require('express')();
 const server = require('http').Server(app);
-const io = require('socket.io')(server);
+const io = require('socket.io')();
 const bodyParser = require('body-parser');
 const router = require('./router');
 const axios = require('axios');
 const cors = require('cors');
 const winston = require('winston');
-const socketPort = 7000;
-const apiPort = 8000;
+const Port = 8000;
 
 // const allowedOrigins = ["https://pixelart-app.herokuapp.com/art", "https://pixelart-app.herokuapp.com/gallery", "https://pixelart-app.herokuapp.com/"];
 
@@ -124,14 +123,17 @@ const runProgram = (allProjects) => {
     });
   });
 
-  io.listen(process.env.PORT || socketPort, () => {
-    console.log("Now listening on port " + socketPort);
-  });
 };
 
+io.attach(server, {
+	pingInterval: 10000,
+	pingTimeout: 5000,
+	cookie: false
+});
+
 //api server
-app.listen(apiPort, () => {
-  console.log("Now listening on port " + apiPort);
+server.listen(Port, () => {
+  console.log("Now listening on port " + Port);
 });
 
 app.use((req, res, next) => {

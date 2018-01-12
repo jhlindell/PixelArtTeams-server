@@ -22,7 +22,7 @@ exports.signup = function(req, res, next) {
   const username = req.body.username;
 
   if (!email || !password || !username) {
-    return res.status(422).send({error: 'You must provide an email, password and username'});
+    return res.json({error: 'You must provide an email, password and username'});
   }
 
   return knex('users')
@@ -30,14 +30,14 @@ exports.signup = function(req, res, next) {
     .where('email', email)
     .then((responseemail) => {
     if (responseemail.length) {
-      return res.status(422).send({error: 'email is in use'});
+      return res.json({error: 'email is in use'});
     } else {
       knex('users')
         .select('username')
         .where('username', username)
         .then((responsename) => {
           if (responsename.length) {
-            return res.status(422).send({error: 'username is in use'});
+            return res.json({error: 'username is in use'});
           } else {
             const salt = bcrypt.genSaltSync();
             const hash = bcrypt.hashSync(req.body.password, salt);
@@ -46,13 +46,11 @@ exports.signup = function(req, res, next) {
               .returning(['email', 'username', 'user_id', 'isMod'])
               .then((user) => {
                 res.json({token: tokenForUser(user[0])});
-                console.log("signed up user: ", user[0]);
           })
         }
         })
     }
   }).catch(err => {
     return res.json({ err });
-    // return next(err);
   })
 }

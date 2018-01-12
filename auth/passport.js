@@ -20,7 +20,9 @@ const localLogin = new LocalStrategy(localOptions, (username, password, done) =>
       return done(null, user);
     }
   })
-  .catch((err) => { return done(err); });
+  .catch((err) => {
+    return done(err);
+  });
 });
 
 // Setup Options for JWT strategy
@@ -43,7 +45,6 @@ const JwtLogin = new JwtStrategy(jwtOptions, function(payload, done) {
     .catch((err) => {
       return done(err, false);
     });
-
 })
 
 passport.use(JwtLogin);

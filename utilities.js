@@ -36,6 +36,32 @@ function getProjectsFromDatabase() {
     });
 }
 
+function getUserProjectsArray(projectsArray, token){
+  let decodedToken = jwt.decode(token, process.env.JWT_KEY);
+  let id = decodedToken.sub;
+  let projectIndexArray = [];
+  let userProjectsArray = [];
+  return knex('users_projects')
+    .where('user_id', 1)
+    .returning('project_id')
+    .catch(err => {
+      logger.error(err);
+    })
+    .then((response) => {
+      response.forEach(function(object){
+        projectIndexArray.push(object.project_id)
+      })
+      projectsArray.forEach(function(project){
+        projectIndexArray.forEach(function(index){
+          if(project.project_id === index){
+            userProjectsArray.push(project);
+          }
+        })
+      })
+      return userProjectsArray;
+    })
+}
+
 async function sendProjectToDatabase(projectsArray, id){
   let project = getProjectById(projectsArray, id);
   let gridString = JSON.stringify(project.grid);
@@ -192,5 +218,6 @@ module.exports = {
   deleteUnfinishedProject,
   galleryArt,
   changePixel,
-  getIdFromToken
+  getIdFromToken,
+  getUserProjectsArray
 }

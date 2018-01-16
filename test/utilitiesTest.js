@@ -15,7 +15,8 @@ const {
   deleteUnfinishedProject,
   galleryArt,
   changePixel,
-  getIdFromToken
+  getIdFromToken,
+  getUserProjectsArray
 } = require('../utilities');
 
 const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FFF","#FFF"],
@@ -146,6 +147,16 @@ describe('database tests', function(){
       assert.notEqual(grid1, grid2);
     });
   });
+
+  describe('Get User Projects', function(){
+    it('should properly retrieve a list of projects belonging to a user', async function(){
+      let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEsImlhdCI6MTUxNjEzNjMxNTc2NX0.ULJrMww3VFATt7cs5aD1gyNz6WZhadMWSjuTP692Z1g';
+      let projects = await getProjectsFromDatabase();
+      let userArray = await getUserProjectsArray(projects, token);
+      assert.equal(userArray.length, 1);
+    });
+  });
+
 });
 
 describe('auth tests', function(){

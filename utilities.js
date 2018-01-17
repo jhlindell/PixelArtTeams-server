@@ -110,7 +110,7 @@ function setupNewGrid(x=20, y=20){
   return newGrid;
 }
 
-function addNewProject(projectsArray, obj){
+async function addNewProject(projectsArray, obj){
   let decodedToken = jwt.decode(obj.token, process.env.JWT_KEY);
   let owner_id = decodedToken.sub;
   let newProject = {};
@@ -120,7 +120,7 @@ function addNewProject(projectsArray, obj){
   newProject.ysize = obj.y;
   newProject.xsize = obj.x;
 
-  return knex('projects')
+  await knex('projects')
     .insert(newProject)
     .returning("*")
     .then(result => {
@@ -131,6 +131,18 @@ function addNewProject(projectsArray, obj){
     .catch(err => {
       logger.error(err);
     });
+
+  await knex('users_projects')
+    .insert({ user_id: owner_id, project_id: newProject.project_id })
+    .returning('*')
+    .then(result => {
+      // console.log(result)
+    })
+    .catch(err => {
+      logger.error(err);
+    });
+
+  return newProject.project_id;
 }
 
 async function sendFinishedProjectToDatabase(projectsArray, projectid){

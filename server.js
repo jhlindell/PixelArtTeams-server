@@ -14,7 +14,8 @@ const {
   sendFinishedProjectToDatabase,
   deleteUnfinishedProject,
   galleryArt,
-  changePixel
+  changePixel,
+  getUserProjectsArray
 } = require('./utilities');
 
 const app = require('express')();
@@ -76,8 +77,13 @@ const runProgram = (allProjects) => {
       io.in(pixel.project).emit('pixel', pixel);
     });
 
-    socket.on('initialize', () => {
-      socket.emit('sendProjectsToClient', allProjects);
+    socket.on('initialize', async (token) => {
+      if(token){
+        let projects = await getUserProjectsArray(allProjects, token);
+        socket.emit('sendProjectsToClient', projects);
+      } else {
+        socket.emit('sendProjectsToClient', []);
+      }
     });
 
     socket.on('getArtForGallery', () => {
@@ -86,43 +92,49 @@ const runProgram = (allProjects) => {
       });
     });
 
-    socket.on('addNewProject', (obj) => {
-      addNewProject(allProjects, obj).then(() => {
-        socket.emit('sendProjectsToClient', allProjects);
-        socket.broadcast.emit('sendProjectsToClient', allProjects);
-      })
+    socket.on('addNewProject', async (obj) => {
+      let id = await addNewProject(allProjects, obj);
+      let projects = await getUserProjectsArray(allProjects, obj.token);
+      socket.emit('sendProjectsToClient', projects);
+      socket.broadcast.emit('requestRefresh');
+      socket.emit('changeCurrentProject', id);
     });
 
-    socket.on('saveProject', (projectid) => {
-      sendProjectToDatabase(allProjects, projectid).then(() => {
-        socket.emit('sendProjectsToClient', allProjects);
-        socket.broadcast.emit('sendProjectsToClient', allProjects);
+    socket.on('refreshProjects', async (token) => {
+      let projects = await getUserProjectsArray(allProjects, token);
+      socket.emit('sendProjectsToClient', projects);
+    })
+
+    socket.on('saveProject', (obj) => {
+      sendProjectToDatabase(allProjects, obj.projectid).then( async() => {
+        let projects = await getUserProjectsArray(allProjects, obj.token);
+        socket.emit('sendProjectsToClient', projects);
+        socket.broadcast.emit('requestRefresh');
       });
     });
 
-    socket.on('deleteProject', (projectid) => {
-      deleteUnfinishedProject(projectid).then(() => {
-        let index = getIndexOfProject(projectid);
+    socket.on('deleteProject', (obj) => {
+      deleteUnfinishedProject(obj.projectid).then( async() => {
+        let index = getIndexOfProject(obj.projectid);
         allProjects.splice(index, 1);
-        let firstProjectId = allProjects[0].project_id;
+        let projects = await getUserProjectsArray(allProjects, obj.token);
+        let firstProjectId = projects[0].project_id;
         socket.emit('changeCurrentProject', firstProjectId);
-        socket.emit('sendProjectsToClient', allProjects);
-        socket.broadcast.emit('sendProjectsToClient', allProjects);
+        socket.emit('sendProjectsToClient', projects);
+        socket.broadcast.emit('requestRefresh');
       });
     })
 
-    socket.on('sendFinishedProject', (projectid) => {
-      sendProjectToDatabase(allProjects, projectid).then(() => {
-        sendFinishedProjectToDatabase(allProjects, projectid).then(() => {
-          let firstProjectId = allProjects[0].id;
-          socket.emit('changeCurrentProject', firstProjectId);
-          socket.emit('sendProjectsToClient', allProjects);
-          socket.broadcast.emit('sendProjectsToClient', allProjects);
-        });
-      });
+    socket.on('sendFinishedProject', async (obj) => {
+      await sendProjectToDatabase(allProjects, obj.projectid);
+      await sendFinishedProjectToDatabase(allProjects, obj.projectid);
+      let projects = await getUserProjectsArray(allProjects, obj.token);
+      let firstProjectId = projects[0].project_id;
+      socket.emit('changeCurrentProject', firstProjectId);
+      socket.emit('sendProjectsToClient', projects);
+      socket.broadcast.emit('requestRefresh');
     });
   });
-
 };
 
 io.attach(server, {

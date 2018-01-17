@@ -93,6 +93,15 @@ describe('database tests', function(){
       await addNewProject(results, probject);
       assert.equal(results.length, 2);
     });
+    it('should properly add an entry to the users_projects table', async function(){
+      //token for jhl user in database id: 1
+      let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEsImlhdCI6MTUxNjEzNjMxNTc2NX0.ULJrMww3VFATt7cs5aD1gyNz6WZhadMWSjuTP692Z1g';
+      let probject = { name: 'foo', x: 20, y: 20, token: token };
+      let projects = await getProjectsFromDatabase();
+      await addNewProject(projects, probject);
+      let userArray = await getUserProjectsArray(projects, token);
+      assert.equal(userArray.length, 2);
+    });
   });
 
   describe('Gallery Art test', function(){
@@ -149,7 +158,8 @@ describe('database tests', function(){
   });
 
   describe('Get User Projects', function(){
-    it('should properly retrieve a list of projects belonging to a user', async function(){
+    it('should properly retrieve a list of active projects belonging to a user', async function(){
+      //token for jhl user in database id: 1
       let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEsImlhdCI6MTUxNjEzNjMxNTc2NX0.ULJrMww3VFATt7cs5aD1gyNz6WZhadMWSjuTP692Z1g';
       let projects = await getProjectsFromDatabase();
       let userArray = await getUserProjectsArray(projects, token);

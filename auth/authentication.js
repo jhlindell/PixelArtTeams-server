@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 function tokenForUser(user) {
   const timestamp = new Date().getTime();
   return jwt.encode({
+    name: user.username,
     sub: user.user_id,
     iat: timestamp
   }, process.env.JWT_KEY);

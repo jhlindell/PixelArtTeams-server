@@ -1,7 +1,9 @@
 process.env.NODE_ENV = 'test';
 const knex = require('../knex');
 const chai = require('chai');
+require('dotenv').config();
 const assert = chai.assert;
+const jwt = require('jwt-simple');
 const {
   getProjectsFromDatabase,
   sendProjectToDatabase,
@@ -12,13 +14,19 @@ const {
   sendFinishedProjectToDatabase,
   deleteUnfinishedProject,
   galleryArt,
-  changePixel
+  changePixel,
+  getIdFromToken,
+  getUserProjectsArray
 } = require('../utilities');
 
 const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"]];
+
+const testUser = { email: 'bob@foo.com', username: 'Bob', user_id: 7, isMod: false };
+const timestamp = new Date().getTime();
+testToken = jwt.encode({ sub: testUser.user_id, iat: timestamp }, process.env.JWT_KEY);
 
 describe('setUpNewGrid', function(){
   it('should return an empty array if x or y are less than 1', function(){
@@ -64,7 +72,7 @@ describe('database tests', function(){
   describe('getProjectById function test', function(){
     it('should return the proper project when called', function(){
       return getProjectsFromDatabase().then((projects) =>{
-        assert.equal(getProjectById(projects, 1).id, 1);
+        assert.equal(getProjectById(projects, 1).project_id, 1);
       });
     });
   });
@@ -79,16 +87,20 @@ describe('database tests', function(){
 
   describe('addNewProject test', function (){
     it('should properly add a new project to the database', async function(){
-      // try {
       var results = await getProjectsFromDatabase();
       assert.equal(results.length, 1);
-      let probject = {name: 'foo', x: 20, y: 20};
+      let probject = { name: 'foo', x: 20, y: 20, token: testToken };
       await addNewProject(results, probject);
       assert.equal(results.length, 2);
-      // } catch(err) {
-      //   console.log(err);
-      //   // done(err);
-      // }
+    });
+    it('should properly add an entry to the users_projects table', async function(){
+      //token for jhl user in database id: 1
+      let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEsImlhdCI6MTUxNjEzNjMxNTc2NX0.ULJrMww3VFATt7cs5aD1gyNz6WZhadMWSjuTP692Z1g';
+      let probject = { name: 'foo', x: 20, y: 20, token: token };
+      let projects = await getProjectsFromDatabase();
+      await addNewProject(projects, probject);
+      let userArray = await getUserProjectsArray(projects, token);
+      assert.equal(userArray.length, 2);
     });
   });
 
@@ -143,5 +155,23 @@ describe('database tests', function(){
       Object.assign(grid2, projects[0].grid);
       assert.notEqual(grid1, grid2);
     });
+  });
+
+  describe('Get User Projects', function(){
+    it('should properly retrieve a list of active projects belonging to a user', async function(){
+      //token for jhl user in database id: 1
+      let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEsImlhdCI6MTUxNjEzNjMxNTc2NX0.ULJrMww3VFATt7cs5aD1gyNz6WZhadMWSjuTP692Z1g';
+      let projects = await getProjectsFromDatabase();
+      let userArray = await getUserProjectsArray(projects, token);
+      assert.equal(userArray.length, 1);
+    });
+  });
+
+});
+
+describe('auth tests', function(){
+  it('should properly grab the user_id off a token', function(){
+    tokenId = getIdFromToken(testToken);
+    assert.equal(tokenId, 7);
   });
 });

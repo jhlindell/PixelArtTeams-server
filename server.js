@@ -115,7 +115,7 @@ const runProgram = (allProjects) => {
 
     socket.on('deleteProject', (obj) => {
       deleteUnfinishedProject(obj.projectid).then( async() => {
-        let index = getIndexOfProject(obj.projectid);
+        let index = getIndexOfProject(allProjects, obj.projectid);
         allProjects.splice(index, 1);
         let projects = await getUserProjectsArray(allProjects, obj.token);
         let firstProjectId = projects[0].project_id;

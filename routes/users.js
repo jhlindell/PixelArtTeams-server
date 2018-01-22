@@ -27,6 +27,4 @@ router.get('/collaborators/:id', (req, res, next) => {
     })
 })
 
-router.get('/foo', )
-
 module.exports = router;

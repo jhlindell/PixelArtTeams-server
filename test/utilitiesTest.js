@@ -16,7 +16,10 @@ const {
   galleryArt,
   changePixel,
   getIdFromToken,
-  getUserProjectsArray
+  getUserProjectsArray,
+  checkForUser,
+  addUserPermission,
+  getNameFromToken
 } = require('../utilities');
 
 const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FFF","#FFF"],
@@ -164,6 +167,30 @@ describe('database tests', function(){
       let projects = await getProjectsFromDatabase();
       let userArray = await getUserProjectsArray(projects, token);
       assert.equal(userArray.length, 1);
+    });
+  });
+
+  describe('Check For User', function(){
+    it('should return a user id if the user exists in the database', async function(){
+      let usernameTest = await checkForUser("jhl", null);
+      let emailTest = await checkForUser(null, "jon@lindell.com");
+      let nullTest = await checkForUser("foo", "bar");
+      assert.equal(usernameTest, 1);
+      assert.equal(emailTest, 1);
+      assert.equal(nullTest, null);
+    });
+  });
+
+  describe('Add User Permission', function(){
+    it('should properly add a user permission in the users_projects database', async function(){
+      let davesToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiZGF2ZSIsInN1YiI6MiwiaWF0IjoxNTE2Mzg4NjQ3NTY3fQ.Bru4csmkCbKQZEsrXhZkEaeGpCVsEWrcuHgvMZkJg_I'
+      let goodTest = await addUserPermission(2, 1);
+      let projects = await getProjectsFromDatabase();
+      let userArray = await getUserProjectsArray(projects, davesToken);
+      assert.equal(userArray.length, 1);
+      let badTest = await addUserPermission(7, 12);
+      assert.equal(goodTest, true);
+      assert.equal(badTest, false);
     });
   });
 

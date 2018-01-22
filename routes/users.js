@@ -2,63 +2,31 @@
 const express = require('express');
 const router = express.Router();
 const knex = require('../knex');
-const bcrypt = require ('bcrypt');
-const saltRounds = 10;
-const jwt = require('jsonwebtoken');
-
-router.post('/register', (req,res,next) => {
-  let body = req.body;
-
-  bcrypt.hash(body.password, saltRounds, (err, hash)=>{
-    knex.insert({
-      username: body.username,
-      email: body.email,
-      hashed_password: hash
-    })
-    .into('users')
-    .returning('*')
-    .then((response)=>{
-      delete response.hashed_password;
-      res.send(response[0]);
-    })
-    .catch((err) => {
-      next(err);
-    })
+const winston = require('winston');
+const logger = new (winston.Logger)({
+    transports: [
+      new (winston.transports.File)({ filename: 'pixel.log' })
+    ]
   });
-});
 
-router.post('/login', (req,res,next) => {
-    let body = req.body;
-    let username = body.username;
-    let password = body.password;
-    knex('users')
-    .select('user_id', 'username', 'hashed_password', 'isMod', 'email')
-    .where('username', username)
-    .then((data) => {
-      if(data.length === 0){
-        res.setHeader('content-type', 'text/plain');
-        return res.status(400).send('Bad username or password');
+router.get('/collaborators/:id', (req, res, next) => {
+  let id = req.params.id;
+  return knex('users')
+    .select('users.username')
+    .innerJoin('users_projects', 'users.user_id', 'users_projects.user_id')
+    .where('users_projects.project_id', id)
+    .then(result => {
+      let resultArray = [];
+      result.forEach(function(element){
+        resultArray.push(element.username);
+      })
+      res.send(resultArray);
+    })
+    .catch(err => {
+      logger.error(err);
+    })
+})
 
-      } else if (bcrypt.compareSync(password, data[0].hashed_password)){
-        let user = {
-          user_id: data[0].id,
-          username: data[0].username,
-          isMod: data[0].isMod,
-          email: data[0].email,
-        };
-        var token = jwt.sign(user, process.env.JWT_KEY);
-        res.cookie('token', token, {httpOnly: true});
-        return res.sendStatus(200);
-      } else {
-        res.setHeader('content-type', 'text/plain');
-        return res.status(400).send('Bad username or password');
-      }
-    });
-});
-
-router.get('/', (req, res, next) => {
-  console.log("route hit");
-  res.send("success!");
-});
+router.get('/foo', )
 
 module.exports = router;

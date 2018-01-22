@@ -15,7 +15,10 @@ const {
   deleteUnfinishedProject,
   galleryArt,
   changePixel,
-  getUserProjectsArray
+  getUserProjectsArray,
+  checkForUser,
+  addUserPermission,
+  getNameFromToken
 } = require('./utilities');
 
 const app = require('express')();
@@ -37,18 +40,6 @@ const logger = new (winston.Logger)({
   });
 
 io.set('origins', '*:*');
-// io.set('match origin protocol', true);
-
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, PATCH" );
-//   res.header("Access-Control-Allow-Headers", "Content-Type");
-//   if (req.method === "OPTIONS")
-//     res.sendStatus(200);
-//   else
-//     next();
-// });
-
 app.use(cors());
 app.use(bodyParser.json());
 router(app);
@@ -134,6 +125,18 @@ const runProgram = (allProjects) => {
       socket.emit('sendProjectsToClient', projects);
       socket.broadcast.emit('requestRefresh');
     });
+
+    socket.on('addUserToProject', async (obj) => {
+      let userId = await checkForUser(obj.username, obj.email);
+      let result = await addUserPermission(userId, obj.projectid);
+      socket.emit('resultOfAddingPermission', result);
+    });
+
+    socket.on('getUserName', (token) => {
+      let username = getNameFromToken(token);
+      socket.emit('returnUserName', username);
+    })
+
   });
 };
 

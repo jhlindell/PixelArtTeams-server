@@ -42,7 +42,7 @@ function getUserProjectsArray(projectsArray, token){
   let projectIndexArray = [];
   let userProjectsArray = [];
   return knex('users_projects')
-    .where('user_id', 1)
+    .where('user_id', id)
     .returning('project_id')
     .catch(err => {
       logger.error(err);
@@ -219,6 +219,60 @@ function getIdFromToken(token){
   return decodedToken.sub;
 }
 
+function getNameFromToken(token){
+  let decodedToken = jwt.decode(token, process.env.JWT_KEY);
+  return decodedToken.name;
+}
+
+async function checkForUser(userName, Email){
+  let userId = null;
+  if(userName){
+    await knex('users')
+      .where('username', userName)
+      .returning('user_id')
+      .catch(err => {
+        logger.error(err);
+      })
+      .then(response => {
+        if(response.length > 0){
+          userId = response[0].user_id;
+        }
+      });
+  }
+  if(!userId && Email){
+    await knex('users')
+      .where('email', Email)
+      .returning('user_id')
+      .catch(err => {
+        logger.error(err);
+      })
+      .then(response => {
+        if(response.length > 0){
+          userId = response[0].user_id;
+        }
+      });
+  }
+  return userId;
+}
+
+async function addUserPermission(userId, projectId){
+  let result;
+  await knex('users_projects')
+    .insert({user_id: userId, project_id: projectId})
+    .returning('*')
+    .catch(err => {
+      logger.error(err);
+    })
+    .then(response => {
+      if(response){
+        result = true;
+      } else {
+        result = false;
+      }
+    });
+  return result;
+}
+
 module.exports = {
   getProjectsFromDatabase,
   sendProjectToDatabase,
@@ -231,5 +285,8 @@ module.exports = {
   galleryArt,
   changePixel,
   getIdFromToken,
-  getUserProjectsArray
+  getUserProjectsArray,
+  checkForUser,
+  addUserPermission,
+  getNameFromToken
 }

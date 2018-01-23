@@ -10,12 +10,13 @@ const logger = new (winston.Logger)({
 
 function getProjectsFromDatabase() {
   return knex('projects')
-    .select()
+    .select('*')
     .where('is_finished', false)
     .then((response) => {
       let projectArray = [];
       for(let i = 0; i < response.length; i++){
         let object = {};
+        object.project_owner = response[i].project_owner;
         object.project_id = response[i].project_id;
         object.project_name = response[i].project_name;
         object.xsize = response[i].xsize;
@@ -113,8 +114,9 @@ function setupNewGrid(x=20, y=20){
 async function addNewProject(projectsArray, obj){
   let decodedToken = jwt.decode(obj.token, process.env.JWT_KEY);
   let owner_id = decodedToken.sub;
+  let owner_name = decodedToken.name;
   let newProject = {};
-  newProject.project_owner = owner_id;
+  newProject.project_owner = owner_name;
   newProject.project_name = obj.name;
   newProject.grid = '';
   newProject.ysize = obj.y;

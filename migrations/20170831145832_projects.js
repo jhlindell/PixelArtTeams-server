@@ -2,7 +2,7 @@
 exports.up = function(knex, Promise) {
   return knex.schema.createTable('projects', table => {
     table.increments('project_id');
-    table.integer('project_owner')
+    table.string('project_owner').references('username').inTable('users');
     table.string('project_name').defaultTo('');
     table.text('grid').defaultTo('');
     table.integer('xsize').defaultTo(20);

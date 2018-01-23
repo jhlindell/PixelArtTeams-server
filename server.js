@@ -59,8 +59,13 @@ const runProgram = (allProjects) => {
     });
 
     socket.on('grid', (room) =>{
-      let index = getIndexOfProject(allProjects, room);
-      socket.emit('gridUpdated', allProjects[index].grid);
+      try{
+        let index = getIndexOfProject(allProjects, room);
+        socket.emit('gridUpdated', allProjects[index].grid);
+      }
+      catch(err){
+        logger.error(err);
+      }
     });
 
     socket.on('pixel', (pixel) => {
@@ -130,6 +135,15 @@ const runProgram = (allProjects) => {
       let userId = await checkForUser(obj.username, obj.email);
       let result = await addUserPermission(userId, obj.projectid);
       socket.emit('resultOfAddingPermission', result);
+    });
+
+    socket.on('checkUser', async (obj) => {
+      let userId = await checkForUser(obj.username, obj.email);
+      if(userId){
+        socket.emit("resultOfUserCheck", true);
+      } else {
+        socket.emit("resultOfUserCheck", false);
+      }
     });
 
     socket.on('getUserName', (token) => {

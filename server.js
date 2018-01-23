@@ -132,6 +132,15 @@ const runProgram = (allProjects) => {
       socket.emit('resultOfAddingPermission', result);
     });
 
+    socket.on('checkUser', async (obj) => {
+      let userId = await checkForUser(obj.username, obj.email);
+      if(userId){
+        socket.emit("resultOfUserCheck", true);
+      } else {
+        socket.emit("resultOfUserCheck", false);
+      }
+    });
+
     socket.on('getUserName', (token) => {
       let username = getNameFromToken(token);
       socket.emit('returnUserName', username);

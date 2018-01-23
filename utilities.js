@@ -10,12 +10,13 @@ const logger = new (winston.Logger)({
 
 function getProjectsFromDatabase() {
   return knex('projects')
-    .select()
+    .select('*')
     .where('is_finished', false)
     .then((response) => {
       let projectArray = [];
       for(let i = 0; i < response.length; i++){
         let object = {};
+        object.project_owner = response[i].project_owner;
         object.project_id = response[i].project_id;
         object.project_name = response[i].project_name;
         object.xsize = response[i].xsize;

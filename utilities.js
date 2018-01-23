@@ -114,8 +114,9 @@ function setupNewGrid(x=20, y=20){
 async function addNewProject(projectsArray, obj){
   let decodedToken = jwt.decode(obj.token, process.env.JWT_KEY);
   let owner_id = decodedToken.sub;
+  let owner_name = decodedToken.name;
   let newProject = {};
-  newProject.project_owner = owner_id;
+  newProject.project_owner = owner_name;
   newProject.project_name = obj.name;
   newProject.grid = '';
   newProject.ysize = obj.y;

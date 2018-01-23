@@ -59,8 +59,13 @@ const runProgram = (allProjects) => {
     });
 
     socket.on('grid', (room) =>{
-      let index = getIndexOfProject(allProjects, room);
-      socket.emit('gridUpdated', allProjects[index].grid);
+      try{
+        let index = getIndexOfProject(allProjects, room);
+        socket.emit('gridUpdated', allProjects[index].grid);
+      }
+      catch(err){
+        logger.error(err);
+      }
     });
 
     socket.on('pixel', (pixel) => {

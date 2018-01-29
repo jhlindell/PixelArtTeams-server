@@ -44,25 +44,13 @@ describe('setUpNewGrid', function(){
 });
 
 describe('database tests', function(){
-  beforeEach(function(done) {
-    knex.migrate.rollback()
-    .then(function() {
-      knex.migrate.latest()
-      .then(function() {
-        return knex.seed.run()
-        .then(function() {
-          done();
-        });
-      });
-    });
+  beforeEach(async function() {
+    await knex.migrate.rollback()
+    await knex.migrate.latest()
+    await knex.seed.run()
   });
 
-  afterEach(function(done) {
-    knex.migrate.rollback()
-    .then(function() {
-      done();
-    });
-  });
+  afterEach(() => knex.migrate.rollback());
 
   describe('getProjectsFromDatabase', function(){
     it('should return an array of all open projects in the database', function(){

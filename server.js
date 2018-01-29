@@ -30,14 +30,13 @@ const axios = require('axios');
 const cors = require('cors');
 const winston = require('winston');
 const Port = process.env.PORT || 8000;
+const logger = new (winston.Logger)({
+  transports: [
+    new (winston.transports.File)({ filename: 'pixel.log' })
+  ]
+});
 
 // const allowedOrigins = ["https://pixelart-app.herokuapp.com/art", "https://pixelart-app.herokuapp.com/gallery", "https://pixelart-app.herokuapp.com/"];
-
-const logger = new (winston.Logger)({
-    transports: [
-      new (winston.transports.File)({ filename: 'pixel.log' })
-    ]
-  });
 
 io.set('origins', '*:*');
 app.use(cors());

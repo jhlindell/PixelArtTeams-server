@@ -7,20 +7,23 @@ const jwt = require('jwt-simple');
 const {
   getProjectsFromDatabase,
   sendProjectToDatabase,
+  sendFinishedProjectToDatabase,
   getProjectById,
   getIndexOfProject,
-  setupNewGrid,
   addNewProject,
-  sendFinishedProjectToDatabase,
+  setupNewGrid,
   deleteUnfinishedProject,
   galleryArt,
-  changePixel,
-  getIdFromToken,
-  getUserProjectsArray,
-  checkForUser,
+  changePixel
+} = require('../routes/projects');
+
+const {
   addUserPermission,
-  getNameFromToken
-} = require('../utilities');
+  checkForUser,
+  getUserProjectsArray,
+  getNameFromToken,
+  getIdFromToken
+} = require('../routes/users');
 
 const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"],

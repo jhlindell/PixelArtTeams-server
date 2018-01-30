@@ -38,6 +38,10 @@ async function addUserPermission(userId, projectId){
   return result;
 }
 
+function removeDeadPermissions(id){
+  
+}
+
 async function checkForUser(userName, Email){
   let userId = null;
   if(userName){

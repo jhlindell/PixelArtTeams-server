@@ -110,10 +110,8 @@ io.on('connection', async (socket) => {
   });
 
   socket.on('addUserToProject', async (obj) => {
-    console.log('AUP object: ', obj);
     let userId = await checkForUser(obj.username, obj.email);
     let result = await addUserPermission(userId, obj.projectid);
-    console.log("AUP result: ", result);
     socket.emit('resultOfAddingPermission', result);
   });
 

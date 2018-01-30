@@ -10,17 +10,29 @@ const logger = new (winston.Logger)({
 
 async function addUserPermission(userId, projectId){
   let result;
-  await knex('users_projects')
-    .insert({user_id: userId, project_id: projectId})
-    .returning('*')
+  result = await knex('users_projects')
+    .where({user_id: userId, project_id: projectId})
+    .select('*')
     .catch(err => {
       logger.error(err);
     })
     .then(response => {
-      if(response){
-        result = true;
+      if(response.length === 0){
+        return knex('users_projects')
+          .insert({user_id: userId, project_id: projectId})
+          .returning('*')
+          .catch(err => {
+            logger.error(err);
+          })
+          .then(response => {
+            if(response.length > 0){
+              return "success";
+            } else {
+              return "error";
+            }
+          });
       } else {
-        result = false;
+        return "user already exists";
       }
     });
   return result;

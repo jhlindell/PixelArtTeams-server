@@ -7,20 +7,23 @@ const jwt = require('jwt-simple');
 const {
   getProjectsFromDatabase,
   sendProjectToDatabase,
+  sendFinishedProjectToDatabase,
   getProjectById,
   getIndexOfProject,
-  setupNewGrid,
   addNewProject,
-  sendFinishedProjectToDatabase,
+  setupNewGrid,
   deleteUnfinishedProject,
   galleryArt,
-  changePixel,
-  getIdFromToken,
-  getUserProjectsArray,
-  checkForUser,
+  changePixel
+} = require('../routes/projects');
+
+const {
   addUserPermission,
-  getNameFromToken
-} = require('../utilities');
+  checkForUser,
+  getUserProjectsArray,
+  getNameFromToken,
+  getIdFromToken
+} = require('../routes/users');
 
 const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"],
@@ -44,25 +47,13 @@ describe('setUpNewGrid', function(){
 });
 
 describe('database tests', function(){
-  beforeEach(function(done) {
-    knex.migrate.rollback()
-    .then(function() {
-      knex.migrate.latest()
-      .then(function() {
-        return knex.seed.run()
-        .then(function() {
-          done();
-        });
-      });
-    });
+  beforeEach(async function() {
+    await knex.migrate.rollback()
+    await knex.migrate.latest()
+    await knex.seed.run()
   });
 
-  afterEach(function(done) {
-    knex.migrate.rollback()
-    .then(function() {
-      done();
-    });
-  });
+  afterEach(() => knex.migrate.rollback());
 
   describe('getProjectsFromDatabase', function(){
     it('should return an array of all open projects in the database', function(){

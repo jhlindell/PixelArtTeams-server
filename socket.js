@@ -75,8 +75,10 @@ io.on('connection', async (socket) => {
   });
 
   socket.on('refreshProjects', async (token) => {
-    let projects = await getUserProjectsArray(allProjects, token);
-    socket.emit('sendProjectsToClient', projects);
+    if(token){
+      let projects = await getUserProjectsArray(allProjects, token);
+      socket.emit('sendProjectsToClient', projects);
+    }
   })
 
   socket.on('saveProject', (obj) => {

@@ -26,6 +26,7 @@ const logger = new (winston.Logger)({
   ]
 });
 
+io.set('origins', '*:*');
 io.on('connection', async (socket) => {
   const allProjects = await getProjectsFromDatabase();
   socket.on('joinRoom', (room) => {

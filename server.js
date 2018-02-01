@@ -12,7 +12,7 @@ const Port = process.env.PORT || 8000;
 
 // const allowedOrigins = ["https://pixelart-app.herokuapp.com/art", "https://pixelart-app.herokuapp.com/gallery", "https://pixelart-app.herokuapp.com/"];
 
-app.use(cors());
+server.use(cors());
 app.use(bodyParser.json());
 router(app);
 

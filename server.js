@@ -12,11 +12,11 @@ const Port = process.env.PORT || 8000;
 
 // const allowedOrigins = ["https://pixelart-app.herokuapp.com/art", "https://pixelart-app.herokuapp.com/gallery", "https://pixelart-app.herokuapp.com/"];
 
-server.use(cors());
+app.use(cors());
 app.use(bodyParser.json());
 router(app);
 
-io.set('origins', '*:*');
+io.origins(['*:*']);
 io.attach(server, {
 	pingInterval: 10000,
 	pingTimeout: 5000,

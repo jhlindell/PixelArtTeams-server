@@ -20,7 +20,8 @@ io.origins(['*:*']);
 io.attach(server, {
 	pingInterval: 10000,
 	pingTimeout: 5000,
-	cookie: false
+	cookie: false,
+  origins: '*:*'
 });
 
 //api server

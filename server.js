@@ -16,7 +16,7 @@ app.use(cors());
 app.use(bodyParser.json());
 router(app);
 
-io.origins(['*:*']);
+// io.set('origins', '*:*');
 io.attach(server, {
 	pingInterval: 10000,
 	pingTimeout: 5000,

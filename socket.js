@@ -28,8 +28,6 @@ const logger = new (winston.Logger)({
   ]
 });
 
-// io.set('origins', '*:*');
-
 getProjectsFromDatabase().then((allProjects) => {
   runProgram(allProjects);
 });

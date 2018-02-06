@@ -29,110 +29,116 @@ const logger = new (winston.Logger)({
 });
 
 // io.set('origins', '*:*');
-const allProjects = getProjectsFromDatabase();
-io.on('connection', (socket) => {
-  socket.on('joinRoom', (room) => {
-    socket.join(room);
-  });
 
-  socket.on('leaveRoom', (room) => {
-    socket.leave(room);
-  });
+getProjectsFromDatabase().then((allProjects) => {
+  runProgram(allProjects);
+});
 
-  socket.on('grid', (room) =>{
-    try{
-      let index = getIndexOfProject(allProjects, room);
-      socket.emit('gridUpdated', allProjects[index].grid);
-    }
-    catch(err){
-      logger.error(err);
-    }
-  });
-
-  socket.on('pixel', (pixel) => {
-    changePixel(allProjects, pixel);
-    io.in(pixel.project).emit('pixel', pixel);
-  });
-
-  socket.on('initialize', async (token) => {
-    if(token){
-      let projects = await getUserProjectsArray(allProjects, token);
-      socket.emit('sendProjectsToClient', projects);
-    } else {
-      socket.emit('sendProjectsToClient', []);
-    }
-  });
-
-  socket.on('getArtForGallery', () => {
-    galleryArt().then((result) => {
-      socket.emit("sendingGallery", result);
+const runProgram = (allProjects) => {
+  io.on('connection', (socket) => {
+    socket.on('joinRoom', (room) => {
+      socket.join(room);
     });
-  });
 
-  socket.on('addNewProject', async (obj) => {
-    let id = await addNewProject(allProjects, obj);
-    let projects = await getUserProjectsArray(allProjects, obj.token);
-    socket.emit('sendProjectsToClient', projects);
-    socket.broadcast.emit('requestRefresh');
-    socket.emit('changeCurrentProject', id);
-  });
+    socket.on('leaveRoom', (room) => {
+      socket.leave(room);
+    });
 
-  socket.on('refreshProjects', async (token) => {
-    if(token){
-      let projects = await getUserProjectsArray(allProjects, token);
-      socket.emit('sendProjectsToClient', projects);
-    }
-  })
+    socket.on('grid', (room) =>{
+      try{
+        let index = getIndexOfProject(allProjects, room);
+        socket.emit('gridUpdated', allProjects[index].grid);
+      }
+      catch(err){
+        logger.error(err);
+      }
+    });
 
-  socket.on('saveProject', (obj) => {
-    sendProjectToDatabase(allProjects, obj.projectid).then( async() => {
+    socket.on('pixel', (pixel) => {
+      changePixel(allProjects, pixel);
+      io.in(pixel.project).emit('pixel', pixel);
+    });
+
+    socket.on('initialize', async (token) => {
+      if(token){
+        let projects = await getUserProjectsArray(allProjects, token);
+        socket.emit('sendProjectsToClient', projects);
+      } else {
+        socket.emit('sendProjectsToClient', []);
+      }
+    });
+
+    socket.on('getArtForGallery', () => {
+      galleryArt().then((result) => {
+        socket.emit("sendingGallery", result);
+      });
+    });
+
+    socket.on('addNewProject', async (obj) => {
+      let id = await addNewProject(allProjects, obj);
       let projects = await getUserProjectsArray(allProjects, obj.token);
       socket.emit('sendProjectsToClient', projects);
       socket.broadcast.emit('requestRefresh');
+      socket.emit('changeCurrentProject', id);
     });
-  });
 
-  socket.on('deleteProject', (obj) => {
-    deleteUnfinishedProject(obj.projectid).then( async() => {
-      let index = getIndexOfProject(allProjects, obj.projectid);
-      allProjects.splice(index, 1);
+    socket.on('refreshProjects', async (token) => {
+      if(token){
+        let projects = await getUserProjectsArray(allProjects, token);
+        socket.emit('sendProjectsToClient', projects);
+      }
+    })
+
+    socket.on('saveProject', (obj) => {
+      sendProjectToDatabase(allProjects, obj.projectid).then( async() => {
+        let projects = await getUserProjectsArray(allProjects, obj.token);
+        socket.emit('sendProjectsToClient', projects);
+        socket.broadcast.emit('requestRefresh');
+      });
+    });
+
+    socket.on('deleteProject', (obj) => {
+      deleteUnfinishedProject(obj.projectid).then( async() => {
+        let index = getIndexOfProject(allProjects, obj.projectid);
+        allProjects.splice(index, 1);
+        let projects = await getUserProjectsArray(allProjects, obj.token);
+        let firstProjectId = projects[0].project_id;
+        socket.emit('changeCurrentProject', firstProjectId);
+        socket.emit('sendProjectsToClient', projects);
+        socket.broadcast.emit('requestRefresh');
+      });
+    })
+
+    socket.on('sendFinishedProject', async (obj) => {
+      await sendProjectToDatabase(allProjects, obj.projectid);
+      await sendFinishedProjectToDatabase(allProjects, obj.projectid);
       let projects = await getUserProjectsArray(allProjects, obj.token);
       let firstProjectId = projects[0].project_id;
       socket.emit('changeCurrentProject', firstProjectId);
       socket.emit('sendProjectsToClient', projects);
       socket.broadcast.emit('requestRefresh');
     });
-  })
 
-  socket.on('sendFinishedProject', async (obj) => {
-    await sendProjectToDatabase(allProjects, obj.projectid);
-    await sendFinishedProjectToDatabase(allProjects, obj.projectid);
-    let projects = await getUserProjectsArray(allProjects, obj.token);
-    let firstProjectId = projects[0].project_id;
-    socket.emit('changeCurrentProject', firstProjectId);
-    socket.emit('sendProjectsToClient', projects);
-    socket.broadcast.emit('requestRefresh');
+    socket.on('addUserToProject', async (obj) => {
+      let userId = await checkForUser(obj.username, obj.email);
+      let result = await addUserPermission(userId, obj.projectid);
+      socket.emit('resultOfAddingPermission', result);
+    });
+
+    socket.on('checkUser', async (obj) => {
+      let userId = await checkForUser(obj.username, obj.email);
+      if(userId){
+        socket.emit("resultOfUserCheck", true);
+      } else {
+        socket.emit("resultOfUserCheck", false);
+      }
+    });
+
+    socket.on('getUserName', (token) => {
+      let username = getNameFromToken(token);
+      socket.emit('returnUserName', username);
+    })
   });
-
-  socket.on('addUserToProject', async (obj) => {
-    let userId = await checkForUser(obj.username, obj.email);
-    let result = await addUserPermission(userId, obj.projectid);
-    socket.emit('resultOfAddingPermission', result);
-  });
-
-  socket.on('checkUser', async (obj) => {
-    let userId = await checkForUser(obj.username, obj.email);
-    if(userId){
-      socket.emit("resultOfUserCheck", true);
-    } else {
-      socket.emit("resultOfUserCheck", false);
-    }
-  });
-
-  socket.on('getUserName', (token) => {
-    let username = getNameFromToken(token);
-    socket.emit('returnUserName', username);
-  })
-});
+}
 
 module.exports = io;

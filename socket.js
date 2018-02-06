@@ -12,6 +12,7 @@ const {
   galleryArt,
   changePixel
 } = require('./routes/projects');
+
 const {
   addUserPermission,
   checkForUser,
@@ -28,8 +29,8 @@ const logger = new (winston.Logger)({
 });
 
 // io.set('origins', '*:*');
-io.on('connection', async (socket) => {
-  const allProjects = await getProjectsFromDatabase();
+const allProjects = getProjectsFromDatabase();
+io.on('connection', (socket) => {
   socket.on('joinRoom', (room) => {
     socket.join(room);
   });

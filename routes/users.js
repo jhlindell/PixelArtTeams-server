@@ -25,7 +25,7 @@ async function addUserPermission(userId, projectId){
             logger.error(err);
           })
           .then(response => {
-            if(response.length > 0){
+            if(response !== undefined && response.length > 0){
               return "success";
             } else {
               return "error";
@@ -39,7 +39,7 @@ async function addUserPermission(userId, projectId){
 }
 
 function removeDeadPermissions(id){
-  
+
 }
 
 async function checkForUser(userName, Email){

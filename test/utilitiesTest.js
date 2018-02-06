@@ -180,8 +180,8 @@ describe('database tests', function(){
       let userArray = await getUserProjectsArray(projects, davesToken);
       assert.equal(userArray.length, 1);
       let badTest = await addUserPermission(7, 12);
-      assert.equal(goodTest, true);
-      assert.equal(badTest, false);
+      assert.equal(goodTest, "success");
+      assert.equal(badTest, "error");
     });
   });
 

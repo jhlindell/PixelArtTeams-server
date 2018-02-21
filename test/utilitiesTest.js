@@ -14,7 +14,8 @@ const {
   setupNewGrid,
   deleteUnfinishedProject,
   galleryArt,
-  changePixel
+  changePixel,
+  getProjectFromDbById
 } = require('../routes/projects');
 
 const {
@@ -60,6 +61,14 @@ describe('database tests', function(){
       return getProjectsFromDatabase().then((projects) =>{
         assert.equal(projects.length, 1);
       });
+    });
+  });
+
+  describe('getProjectFromDbById', function(){
+    it('should return a single project from database by id passed in', async function(){
+      let project = await getProjectFromDbById(1);
+      console.log(project);
+      assert.equal(project.project_id, 1);
     });
   });
 

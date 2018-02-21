@@ -189,6 +189,20 @@ function changePixel(projectsArray, pixel){
   }
 }
 
+function getProjectFromDbById(projectid){
+  return knex('projects')
+    .select('*')
+    .where('project_id', projectid)
+    .then(result => {
+      let project = result[0];
+      project.grid = JSON.parse(result[0].grid);
+      return project;
+    })
+    .catch(err => {
+      logger.error(err);
+    })
+}
+
 module.exports = {
   getProjectsFromDatabase,
   sendProjectToDatabase,
@@ -199,5 +213,6 @@ module.exports = {
   setupNewGrid,
   deleteUnfinishedProject,
   galleryArt,
-  changePixel
+  changePixel,
+  getProjectFromDbById
 }

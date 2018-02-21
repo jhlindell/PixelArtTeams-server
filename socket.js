@@ -10,7 +10,8 @@ const {
   setupNewGrid,
   deleteUnfinishedProject,
   galleryArt,
-  changePixel
+  changePixel,
+  getProjectFromDbById
 } = require('./routes/projects');
 
 const {
@@ -135,6 +136,11 @@ const runProgram = (allProjects) => {
     socket.on('getUserName', (token) => {
       let username = getNameFromToken(token);
       socket.emit('returnUserName', username);
+    })
+
+    socket.on('getSingleProject', async(id) => {
+      let project = await getProjectFromDbById(id);
+      socket.emit('returnSingleProject', project);
     })
   });
 }

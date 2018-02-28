@@ -73,6 +73,15 @@ const runProgram = (allProjects) => {
       });
     });
 
+    socket.on('getGalleryTop3', async () => {
+      let gallery = await galleryArt();
+      let top3 = [];
+      top3.push(gallery[0]);
+      top3.push(gallery[1]);
+      top3.push(gallery[2]);
+      socket.emit('galleryTop3', top3);
+    })
+
     socket.on('addNewProject', async (obj) => {
       let id = await addNewProject(allProjects, obj);
       let projects = await getUserProjectsArray(allProjects, obj.token);

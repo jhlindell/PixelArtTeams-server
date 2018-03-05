@@ -38,8 +38,34 @@ async function addUserPermission(userId, projectId){
   return result;
 }
 
-function removeDeadPermissions(id){
+async function getIdFromUsername(username){
+  let result;
+  result = await knex('users')
+    .where({username: username })
+    .select('user_id')
+    .catch(err => {
+      logger.error(err);
+    })
+    .then(response => {
+      if(response.length > 0){
+        return response[0].user_id;
+      }
+    })
+  return result;
+}
 
+async function removeUserPermission(userid, projectid){
+  let result
+  result = await knex('users_projects')
+    .where({ user_id: userid })
+    .del()
+    .returning('user_id')
+    .catch(err => {
+      logger.error(err);
+    })
+    .then(response => {
+      console.log('remove user permission response: ', response);
+    })
 }
 
 async function checkForUser(userName, Email){
@@ -111,6 +137,8 @@ function getNameFromToken(token){
 
 module.exports = {
   addUserPermission,
+  removeUserPermission,
+  getIdFromUsername,
   checkForUser,
   getUserProjectsArray,
   getIdFromToken,

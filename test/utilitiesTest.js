@@ -23,7 +23,9 @@ const {
   checkForUser,
   getUserProjectsArray,
   getNameFromToken,
-  getIdFromToken
+  getIdFromToken,
+  removeUserPermission,
+  getIdFromUsername,
 } = require('../routes/users');
 
 const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FFF","#FFF"],
@@ -67,7 +69,6 @@ describe('database tests', function(){
   describe('getProjectFromDbById', function(){
     it('should return a single project from database by id passed in', async function(){
       let project = await getProjectFromDbById(1);
-      console.log(project);
       assert.equal(project.project_id, 1);
     });
   });
@@ -194,6 +195,26 @@ describe('database tests', function(){
     });
   });
 
+  describe('Get Id From a Username', function(){
+    it('should take in a username and return the associated user_id', async function(){
+      let result;
+      result = await getIdFromUsername('jhl');
+      assert.equal(result, 1);
+    })
+  });
+
+  describe('Remove User Permission', function(){
+    it('should remove a user permission from the users_projects database', async function(){
+      let davesToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiZGF2ZSIsInN1YiI6MiwiaWF0IjoxNTE2Mzg4NjQ3NTY3fQ.Bru4csmkCbKQZEsrXhZkEaeGpCVsEWrcuHgvMZkJg_I'
+      let goodTest = await addUserPermission(2, 1);
+      let projects = await getProjectsFromDatabase();
+      let userArray = await getUserProjectsArray(projects, davesToken);
+      assert.equal(userArray.length, 1);
+      let removeTest = await removeUserPermission(2, 1)
+      let userArray2 = await getUserProjectsArray(projects, davesToken);
+      assert.equal(userArray2.length, 0);
+    });
+  })
 });
 
 describe('auth tests', function(){

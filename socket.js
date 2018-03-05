@@ -76,9 +76,11 @@ const runProgram = (allProjects) => {
     socket.on('getGalleryTop3', async () => {
       let gallery = await galleryArt();
       let top3 = [];
-      top3.push(gallery[0]);
-      top3.push(gallery[1]);
-      top3.push(gallery[2]);
+      for(let i = 0; i< 3; i++){
+        if(gallery[i]){
+          top3.push(gallery[i]);
+        }
+      }
       socket.emit('galleryTop3', top3);
     })
 
@@ -131,6 +133,11 @@ const runProgram = (allProjects) => {
       let userId = await checkForUser(obj.username, obj.email);
       let result = await addUserPermission(userId, obj.projectid);
       socket.emit('resultOfAddingPermission', result);
+    });
+
+    socket.on('removeUserFromProject', async (ojb) => {
+      let id = getIdFromUsername(obj.username);
+      removeUserPermission(obj.username, obj.projectid);
     });
 
     socket.on('checkUser', async (obj) => {

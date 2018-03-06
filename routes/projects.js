@@ -1,6 +1,7 @@
 const knex = require('../knex');
 const winston = require('winston');
 const jwt = require('jwt-simple');
+const { avgRating } = require('./ratings');
 const logger = new (winston.Logger)({
     transports: [
       new (winston.transports.File)({ filename: 'pixel.log' })
@@ -172,7 +173,28 @@ async function galleryArt() {
   .catch(err => {
     logger.error(err);
   });
+}
 
+async function galleryRatings(gallery){
+  let returnGallery = [];
+  let ratedGallery = gallery.map(async (artPiece) => {
+    let rating = await avgRating(artPiece.project_id);
+    artPiece.rating = rating;
+    return artPiece;
+  });
+  await Promise.all(ratedGallery).then(resolvedGallery => {
+    returnGallery = resolvedGallery.map(item => {
+      return item;
+    })
+  });
+  return returnGallery;
+}
+
+function sortRatedGallery(gallery){
+  let sortedGallery = gallery.sort((a, b) => {
+    return b.rating - a.rating;
+  });
+  return sortedGallery;
 }
 
 function changePixel(projectsArray, pixel){
@@ -214,5 +236,7 @@ module.exports = {
   deleteUnfinishedProject,
   galleryArt,
   changePixel,
-  getProjectFromDbById
+  getProjectFromDbById,
+  galleryRatings,
+  sortRatedGallery
 }

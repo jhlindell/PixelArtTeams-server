@@ -11,7 +11,9 @@ const {
   deleteUnfinishedProject,
   galleryArt,
   changePixel,
-  getProjectFromDbById
+  getProjectFromDbById,
+  galleryRatings,
+  sortRatedGallery
 } = require('./routes/projects');
 
 const {
@@ -73,18 +75,21 @@ const runProgram = (allProjects) => {
       }
     });
 
-    socket.on('getArtForGallery', () => {
-      galleryArt().then((result) => {
-        socket.emit("sendingGallery", result);
-      });
+    socket.on('getArtForGallery', async () => {
+      let gallery = await galleryArt();
+      let ratedGallery = await galleryRatings(gallery);
+      let sortedGallery = sortRatedGallery(ratedGallery);
+      socket.emit("sendingGallery", sortedGallery);
     });
 
     socket.on('getGalleryTop3', async () => {
       let gallery = await galleryArt();
+      let ratedGallery = await galleryRatings(gallery);
+      let sortedGallery = sortRatedGallery(ratedGallery);
       let top3 = [];
       for(let i = 0; i< 3; i++){
-        if(gallery[i]){
-          top3.push(gallery[i]);
+        if(sortedGallery[i]){
+          top3.push(sortedGallery[i]);
         }
       }
       socket.emit('galleryTop3', top3);

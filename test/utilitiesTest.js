@@ -15,7 +15,8 @@ const {
   deleteUnfinishedProject,
   galleryArt,
   changePixel,
-  getProjectFromDbById
+  getProjectFromDbById,
+  galleryRatings
 } = require('../routes/projects');
 
 const {
@@ -256,7 +257,7 @@ describe('database tests', function(){
       let result2 = await addRating(2,1,9);
       let rating2 = await getRatingByUser(result2.project_id, 2);
       assert.equal(rating2, 9);
-      let avgResult = await AvgRating(1);
+      let avgResult = await avgRating(1);
       assert.equal(avgResult, 6)
     });
   });

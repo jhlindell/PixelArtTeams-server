@@ -24,7 +24,8 @@ const {
 
 const {
   addRating,
-  getRatingByUser
+  getRatingByUser,
+  avgRating
 } = require('./routes/ratings');
 
 const winston = require('winston');
@@ -173,11 +174,15 @@ const runProgram = (allProjects) => {
     socket.on('changeUserRatingForProject', async(obj) => {
       let id = getIdFromToken(obj.token);
       let result = await addRating(id, obj.project_id, obj.rating);
-      console.log('changeUserRatingForProject', result)
       if(result !== -1){
         socket.emit('returnUserRatingForProject', { rating: result.rating, project_id: result.project_id })
       }
     });
+
+    socket.on('getAvgRatingForProject', async(id) => {
+      let rating = await avgRating(id);
+      socket.emit('returnAvgRating', { rating, project_id: id });
+    })
   });
 }
 

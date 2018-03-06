@@ -30,7 +30,7 @@ const {
 
 const {
   addRating,
-  changeRating,
+  avgRating,
   deleteRating,
   getRatingByUser
 } = require('../routes/ratings');
@@ -247,6 +247,17 @@ describe('database tests', function(){
       await deleteRating(1,1);
       let rating2 = await getRatingByUser(result.project_id, 1);
       assert.equal(rating2, -1);
+    });
+
+    it('should properly fetch average ratings for a project', async function(){
+      let result = await addRating(1,1,3);
+      let rating = await getRatingByUser(result.project_id, 1);
+      assert.equal(rating, 3);
+      let result2 = await addRating(2,1,9);
+      let rating2 = await getRatingByUser(result2.project_id, 2);
+      assert.equal(rating2, 9);
+      let avgResult = await AvgRating(1);
+      assert.equal(avgResult, 6)
     });
   });
 

@@ -79,8 +79,27 @@ function deleteRating(userid, projectid){
     })
 }
 
+function avgRating(projectid){
+  return knex('ratings')
+    .where({project_id: projectid})
+    .select('rating')
+    .catch(err => {
+      logger.error(err);
+    })
+    .then((response) => {
+      let array = response.map(element => {
+        return element.rating;
+      });
+      let sum = array.reduce((acc, current) => {
+        return acc + current;
+      });
+      return sum/array.length;
+    })
+}
+
 module.exports = {
   addRating,
   deleteRating,
-  getRatingByUser
+  getRatingByUser,
+  avgRating
 };

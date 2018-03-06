@@ -64,8 +64,9 @@ async function removeUserPermission(userid, projectid){
       logger.error(err);
     })
     .then(response => {
-      console.log('remove user permission response: ', response);
+      // console.log('remove user permission response: ', response[0]);
     })
+  return result;
 }
 
 async function checkForUser(userName, Email){

@@ -22,6 +22,11 @@ const {
   getIdFromToken
 } = require('./routes/users');
 
+const {
+  addRating,
+  getRatingByUser
+} = require('./routes/ratings');
+
 const winston = require('winston');
 const logger = new (winston.Logger)({
   transports: [
@@ -152,12 +157,27 @@ const runProgram = (allProjects) => {
     socket.on('getUserName', (token) => {
       let username = getNameFromToken(token);
       socket.emit('returnUserName', username);
-    })
+    });
 
     socket.on('getSingleProject', async(id) => {
       let project = await getProjectFromDbById(id);
       socket.emit('returnSingleProject', project);
-    })
+    });
+
+    socket.on('getUserRatingForProject', async(obj) => {
+      let id = getIdFromToken(obj.token);
+      let rating = await getRatingByUser(obj.project_id, id);
+      socket.emit('returnUserRatingForProject', { rating, project_id: obj.project_id });
+    });
+
+    socket.on('changeUserRatingForProject', async(obj) => {
+      let id = getIdFromToken(obj.token);
+      let result = await addRating(id, obj.project_id, obj.rating);
+      console.log('changeUserRatingForProject', result)
+      if(result !== -1){
+        socket.emit('returnUserRatingForProject', { rating: result.rating, project_id: result.project_id })
+      }
+    });
   });
 }
 

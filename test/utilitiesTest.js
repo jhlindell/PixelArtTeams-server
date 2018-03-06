@@ -25,8 +25,15 @@ const {
   getNameFromToken,
   getIdFromToken,
   removeUserPermission,
-  getIdFromUsername,
+  getIdFromUsername
 } = require('../routes/users');
+
+const {
+  addRating,
+  changeRating,
+  deleteRating,
+  getRatingByUser
+} = require('../routes/ratings');
 
 const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"],
@@ -200,7 +207,7 @@ describe('database tests', function(){
       let result;
       result = await getIdFromUsername('jhl');
       assert.equal(result, 1);
-    })
+    });
   });
 
   describe('Remove User Permission', function(){
@@ -214,7 +221,35 @@ describe('database tests', function(){
       let userArray2 = await getUserProjectsArray(projects, davesToken);
       assert.equal(userArray2.length, 0);
     });
-  })
+  });
+
+  describe('Ratings Tests', function(){
+    it('should properly add and update a users rating', async function(){
+      let result = await addRating(1,1,3);
+      assert.equal(result.project_id, 1);
+      let result2 = await addRating(1,1,5);
+      let rating = await getRatingByUser(1, 1);
+      assert.equal(rating, 5);
+      let result3 = await addRating(1,7,5);
+      assert.equal(result3, -1);
+    });
+
+    it('should properly get a project rating', async function(){
+      let result = await addRating(1,1,3);
+      let rating = await getRatingByUser(result.project_id, 1);
+      assert.equal(rating, 3);
+    });
+
+    it('should properly delete a rating', async function(){
+      let result = await addRating(1,1,3);
+      let rating = await getRatingByUser(result.project_id, 1);
+      assert.equal(rating, 3);
+      await deleteRating(1,1);
+      let rating2 = await getRatingByUser(result.project_id, 1);
+      assert.equal(rating2, -1);
+    });
+  });
+
 });
 
 describe('auth tests', function(){

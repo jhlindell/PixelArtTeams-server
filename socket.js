@@ -21,7 +21,9 @@ const {
   checkForUser,
   getUserProjectsArray,
   getNameFromToken,
-  getIdFromToken
+  getIdFromToken,
+  getIdFromUsername,
+  removeUserPermission
 } = require('./routes/users');
 
 const {
@@ -146,9 +148,10 @@ const runProgram = (allProjects) => {
       socket.emit('resultOfAddingPermission', result);
     });
 
-    socket.on('removeUserFromProject', async (ojb) => {
-      let id = getIdFromUsername(obj.username);
-      removeUserPermission(obj.username, obj.projectid);
+    socket.on('removeUserFromProject', async (obj) => {
+      let id = await getIdFromUsername(obj.username);
+      removeUserPermission(id, obj.projectid);
+      socket.emit('userPermissionRemoved');
     });
 
     socket.on('checkUser', async (obj) => {

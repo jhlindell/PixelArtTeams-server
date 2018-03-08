@@ -90,11 +90,15 @@ function avgRating(projectid){
       let array = response.map(element => {
         return element.rating;
       });
-      let sum = array.reduce((acc, current) => {
-        return acc + current;
-      });
-      return sum/array.length;
-    })
+      if(array.length){
+        let sum = array.reduce((acc, current) => {
+          return acc + current;
+        });
+        return sum/array.length;
+      } else {
+        return 0;
+      }
+    });
 }
 
 module.exports = {

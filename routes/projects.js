@@ -22,6 +22,12 @@ function getProjectsFromDatabase() {
         object.project_name = response[i].project_name;
         object.xsize = response[i].xsize;
         object.ysize = response[i].ysize;
+        if(response[i].started_at){
+          object.started_at = response[i].started_at;
+        }
+        if(response[i].finished_at){
+          object.finished_at = response[i].finished_at;
+        }
         let grid;
         if(response[i].grid === ''){
           grid = setupNewGrid(object.xsize, object.ysize);
@@ -202,6 +208,7 @@ async function galleryArt() {
       object.project_name = response[i].project_name;
       object.xsize = response[i].xsize;
       object.ysize = response[i].ysize;
+
       let grid;
       debugger;
       grid = JSON.parse(response[i].grid);

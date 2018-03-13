@@ -134,7 +134,7 @@ const runProgram = (allProjects) => {
         allProjects.splice(index, 1);
         let projects = await getUserProjectsArray(allProjects, obj.token);
         let firstProjectId = projects[0].project_id;
-        socket.emit('changeCurrentProject', firstProjectId);
+        socket.emit('changeCurrentProject', 0);
         socket.emit('sendProjectsToClient', projects);
         socket.broadcast.emit('requestRefresh');
       });
@@ -145,7 +145,7 @@ const runProgram = (allProjects) => {
       await sendFinishedProjectToDatabase(allProjects, obj.projectid);
       let projects = await getUserProjectsArray(allProjects, obj.token);
       let firstProjectId = projects[0].project_id;
-      socket.emit('changeCurrentProject', firstProjectId);
+      socket.emit('changeCurrentProject', 0);
       socket.emit('sendProjectsToClient', projects);
       socket.broadcast.emit('requestRefresh');
     });

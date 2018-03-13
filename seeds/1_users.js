@@ -13,6 +13,13 @@ exports.seed = function(knex, Promise) {
       hashed_password: '$2a$04$2okk.gGRneFIZIUKXKgoQ.CMyHXgMSsMg5Gmjh9Nbzo99S8UOIfgO',
       email: 'dave@foo.com',
       isMod: false
+    },
+    {
+      user_id: 3,
+      username: 'frank',
+      hashed_password: '$2a$04$2okk.gGRneFIZIUKXKgoQ.CMyHXgMSsMg5Gmjh9Nbzo99S8UOIfgO',
+      email: 'frank@foo.com',
+      isMod: false
     }
   ]
 

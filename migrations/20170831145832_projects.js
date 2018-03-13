@@ -8,7 +8,8 @@ exports.up = function(knex, Promise) {
     table.integer('xsize').defaultTo(20);
     table.integer('ysize').defaultTo(20);
     table.boolean('is_finished').defaultTo(false);
-  })
+
+  });
 };
 
 exports.down = function(knex, Promise) {

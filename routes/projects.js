@@ -1,6 +1,8 @@
 const knex = require('../knex');
 const winston = require('winston');
 const jwt = require('jwt-simple');
+const { avgRating } = require('./ratings');
+const moment = require('moment');
 const logger = new (winston.Logger)({
     transports: [
       new (winston.transports.File)({ filename: 'pixel.log' })
@@ -20,6 +22,12 @@ function getProjectsFromDatabase() {
         object.project_name = response[i].project_name;
         object.xsize = response[i].xsize;
         object.ysize = response[i].ysize;
+        if(response[i].started_at){
+          object.started_at = response[i].started_at;
+        }
+        if(response[i].finished_at){
+          object.finished_at = response[i].finished_at;
+        }
         let grid;
         if(response[i].grid === ''){
           grid = setupNewGrid(object.xsize, object.ysize);
@@ -88,12 +96,51 @@ async function addNewProject(projectsArray, obj){
   let decodedToken = jwt.decode(obj.token, process.env.JWT_KEY);
   let owner_id = decodedToken.sub;
   let owner_name = decodedToken.name;
+  let timer = obj.timer;
   let newProject = {};
   newProject.project_owner = owner_name;
   newProject.project_name = obj.name;
   newProject.grid = '';
   newProject.ysize = obj.y;
   newProject.xsize = obj.x;
+
+  let start = new Date();
+  let startString = moment.utc(start).format();
+  let finish = new Date();
+  let finishString = null;
+
+  switch(timer){
+    case "1min":
+      finish = moment().add(1, 'm');
+      break;
+    case "3min":
+      finish = moment().add(3, 'm');
+      break;
+    case "5min":
+      finish = moment().add(5, 'm');
+      break;
+    case "15min":
+      finish = moment().add(15, 'm');
+      break;
+    case "1hour":
+      finish = moment().add(1, 'h');
+      break;
+    case "1day":
+      finish = moment().add(1, 'd');
+      break;
+    case "unlimited":
+      finish = null;
+      break;
+    default:
+      finish = null;
+  }
+
+  if(finish){
+    finishString = moment.utc(finish).format();
+  }
+
+  newProject.started_at = startString;
+  newProject.finished_at = finishString;
 
   await knex('projects')
     .insert(newProject)
@@ -161,6 +208,7 @@ async function galleryArt() {
       object.project_name = response[i].project_name;
       object.xsize = response[i].xsize;
       object.ysize = response[i].ysize;
+
       let grid;
       debugger;
       grid = JSON.parse(response[i].grid);
@@ -172,7 +220,28 @@ async function galleryArt() {
   .catch(err => {
     logger.error(err);
   });
+}
 
+async function galleryRatings(gallery){
+  let returnGallery = [];
+  let ratedGallery = gallery.map(async (artPiece) => {
+    let rating = await avgRating(artPiece.project_id);
+    artPiece.rating = rating;
+    return artPiece;
+  });
+  await Promise.all(ratedGallery).then(resolvedGallery => {
+    returnGallery = resolvedGallery.map(item => {
+      return item;
+    })
+  });
+  return returnGallery;
+}
+
+function sortRatedGallery(gallery){
+  let sortedGallery = gallery.sort((a, b) => {
+    return b.rating - a.rating;
+  });
+  return sortedGallery;
 }
 
 function changePixel(projectsArray, pixel){
@@ -214,5 +283,7 @@ module.exports = {
   deleteUnfinishedProject,
   galleryArt,
   changePixel,
-  getProjectFromDbById
+  getProjectFromDbById,
+  galleryRatings,
+  sortRatedGallery
 }

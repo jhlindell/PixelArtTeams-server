@@ -1,0 +1,73 @@
+Arguments: 
+  /usr/local/Cellar/node/9.7.1_1/bin/node /usr/local/Cellar/yarn/1.5.1_1/libexec/bin/yarn.js install
+
+PATH: 
+  /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+Yarn version: 
+  1.5.1
+
+Node version: 
+  9.7.1
+
+Platform: 
+  darwin x64
+
+npm manifest: 
+  {
+    "name": "pixel-server",
+    "version": "1.0.0",
+    "description": "the server for TeamPixel",
+    "main": "server.js",
+    "scripts": {
+      "start": "node server.js",
+      "test": "mocha test"
+    },
+    "keywords": [],
+    "author": "Jon Lindell",
+    "license": "ISC",
+    "dependencies": {
+      "axios": "^0.16.2",
+      "bcrypt": "^1.0.2",
+      "bcryptjs": "^2.4.3",
+      "body-parser": "^1.17.2",
+      "chai": "^4.1.2",
+      "cookie-parser": "^1.4.3",
+      "cors": "^2.8.4",
+      "dotenv": "^4.0.0",
+      "express": "^4.15.4",
+      "jsonwebtoken": "^7.4.3",
+      "jwt-simple": "^0.5.1",
+      "knex": "^0.13.0",
+      "mocha": "^3.5.3",
+      "nodemon": "^1.17.1",
+      "passport": "^0.4.0",
+      "passport-jwt": "^3.0.0",
+      "passport-local": "^1.0.0",
+      "pg": "^7.1.2",
+      "socket.io": "^2.0.3",
+      "winston": "^2.3.1"
+    },
+    "engines": {
+      "node": "8.4.0"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
+
+Trace: 
+  Error: Found incompatible module
+      at new MessageError (/usr/local/Cellar/yarn/1.5.1_1/libexec/lib/cli.js:186:110)
+      at Object.checkOne (/usr/local/Cellar/yarn/1.5.1_1/libexec/lib/cli.js:62444:11)
+      at /usr/local/Cellar/yarn/1.5.1_1/libexec/lib/cli.js:22773:75
+      at Generator.next (<anonymous>)
+      at step (/usr/local/Cellar/yarn/1.5.1_1/libexec/lib/cli.js:98:30)
+      at /usr/local/Cellar/yarn/1.5.1_1/libexec/lib/cli.js:116:14
+      at new Promise (<anonymous>)
+      at new F (/usr/local/Cellar/yarn/1.5.1_1/libexec/lib/cli.js:23451:28)
+      at /usr/local/Cellar/yarn/1.5.1_1/libexec/lib/cli.js:95:12
+      at /usr/local/Cellar/yarn/1.5.1_1/libexec/lib/cli.js:22777:27

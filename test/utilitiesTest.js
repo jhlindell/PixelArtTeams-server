@@ -15,7 +15,8 @@ const {
   deleteUnfinishedProject,
   galleryArt,
   changePixel,
-  getProjectFromDbById
+  getProjectFromDbById,
+  galleryRatings
 } = require('../routes/projects');
 
 const {
@@ -23,8 +24,17 @@ const {
   checkForUser,
   getUserProjectsArray,
   getNameFromToken,
-  getIdFromToken
+  getIdFromToken,
+  removeUserPermission,
+  getIdFromUsername
 } = require('../routes/users');
+
+const {
+  addRating,
+  avgRating,
+  deleteRating,
+  getRatingByUser
+} = require('../routes/ratings');
 
 const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"],
@@ -67,7 +77,6 @@ describe('database tests', function(){
   describe('getProjectFromDbById', function(){
     it('should return a single project from database by id passed in', async function(){
       let project = await getProjectFromDbById(1);
-      console.log(project);
       assert.equal(project.project_id, 1);
     });
   });
@@ -191,6 +200,65 @@ describe('database tests', function(){
       let badTest = await addUserPermission(7, 12);
       assert.equal(goodTest, "success");
       assert.equal(badTest, "error");
+    });
+  });
+
+  describe('Get Id From a Username', function(){
+    it('should take in a username and return the associated user_id', async function(){
+      let result;
+      result = await getIdFromUsername('jhl');
+      assert.equal(result, 1);
+    });
+  });
+
+  describe('Remove User Permission', function(){
+    it('should remove a user permission from the users_projects database', async function(){
+      let davesToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiZGF2ZSIsInN1YiI6MiwiaWF0IjoxNTE2Mzg4NjQ3NTY3fQ.Bru4csmkCbKQZEsrXhZkEaeGpCVsEWrcuHgvMZkJg_I'
+      let goodTest = await addUserPermission(2, 1);
+      let projects = await getProjectsFromDatabase();
+      let userArray = await getUserProjectsArray(projects, davesToken);
+      assert.equal(userArray.length, 1);
+      let removeTest = await removeUserPermission(2, 1)
+      let userArray2 = await getUserProjectsArray(projects, davesToken);
+      assert.equal(userArray2.length, 0);
+    });
+  });
+
+  describe('Ratings Tests', function(){
+    it('should properly add and update a users rating', async function(){
+      let result = await addRating(1,1,3);
+      assert.equal(result.project_id, 1);
+      let result2 = await addRating(1,1,5);
+      let rating = await getRatingByUser(1, 1);
+      assert.equal(rating, 5);
+      let result3 = await addRating(1,7,5);
+      assert.equal(result3, -1);
+    });
+
+    it('should properly get a project rating', async function(){
+      let result = await addRating(1,1,3);
+      let rating = await getRatingByUser(result.project_id, 1);
+      assert.equal(rating, 3);
+    });
+
+    it('should properly delete a rating', async function(){
+      let result = await addRating(1,1,3);
+      let rating = await getRatingByUser(result.project_id, 1);
+      assert.equal(rating, 3);
+      await deleteRating(1,1);
+      let rating2 = await getRatingByUser(result.project_id, 1);
+      assert.equal(rating2, -1);
+    });
+
+    it('should properly fetch average ratings for a project', async function(){
+      let result = await addRating(1,1,3);
+      let rating = await getRatingByUser(result.project_id, 1);
+      assert.equal(rating, 3);
+      let result2 = await addRating(2,1,9);
+      let rating2 = await getRatingByUser(result2.project_id, 2);
+      assert.equal(rating2, 9);
+      let avgResult = await avgRating(1);
+      assert.equal(avgResult, 6)
     });
   });
 

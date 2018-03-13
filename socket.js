@@ -56,9 +56,13 @@ const runProgram = (allProjects) => {
 
     socket.on('grid', (room) =>{
       try{
-        let index = getIndexOfProject(allProjects, room);
-        if(index){
-          socket.emit('gridUpdated', allProjects[index].grid);
+        if(room !== 0){
+          let index = getIndexOfProject(allProjects, room);
+          if(index >= 0){
+            socket.emit('gridUpdated', allProjects[index].grid);
+          } else {
+            console.log("can't get index of room: ", room);
+          }
         }
       }
       catch(err){

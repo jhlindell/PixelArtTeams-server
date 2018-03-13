@@ -23,7 +23,8 @@ const {
   getNameFromToken,
   getIdFromToken,
   getIdFromUsername,
-  removeUserPermission
+  removeUserPermission,
+  addPermissionsByList
 } = require('./routes/users');
 
 const {
@@ -56,7 +57,9 @@ const runProgram = (allProjects) => {
     socket.on('grid', (room) =>{
       try{
         let index = getIndexOfProject(allProjects, room);
-        socket.emit('gridUpdated', allProjects[index].grid);
+        if(index){
+          socket.emit('gridUpdated', allProjects[index].grid);
+        }
       }
       catch(err){
         logger.error(err);
@@ -99,6 +102,7 @@ const runProgram = (allProjects) => {
 
     socket.on('addNewProject', async (obj) => {
       let id = await addNewProject(allProjects, obj);
+      await addPermissionsByList(id, obj.collaborators);
       let projects = await getUserProjectsArray(allProjects, obj.token);
       socket.emit('sendProjectsToClient', projects);
       socket.broadcast.emit('requestRefresh');
@@ -157,7 +161,7 @@ const runProgram = (allProjects) => {
     socket.on('checkUser', async (obj) => {
       let userId = await checkForUser(obj.username, obj.email);
       if(userId){
-        socket.emit("resultOfUserCheck", true);
+        socket.emit("resultOfUserCheck", { bool: true, username: obj.username });
       } else {
         socket.emit("resultOfUserCheck", false);
       }

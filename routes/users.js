@@ -38,6 +38,13 @@ async function addUserPermission(userId, projectId){
   return result;
 }
 
+async function addPermissionsByList(projectid, list){
+  for(let i = 0; i < list.length; i++){
+    let userid = await getIdFromUsername(list[i]);
+    await addUserPermission(userid, projectid)
+  }
+}
+
 async function getIdFromUsername(username){
   let result;
   result = await knex('users')
@@ -143,5 +150,6 @@ module.exports = {
   checkForUser,
   getUserProjectsArray,
   getIdFromToken,
-  getNameFromToken
+  getNameFromToken,
+  addPermissionsByList
 }

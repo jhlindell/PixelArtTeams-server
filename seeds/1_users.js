@@ -5,21 +5,21 @@ exports.seed = function(knex, Promise) {
       username: 'jhl',
       hashed_password: '$2a$04$2okk.gGRneFIZIUKXKgoQ.CMyHXgMSsMg5Gmjh9Nbzo99S8UOIfgO',
       email: 'jon@lindell.com',
-      isMod: true
+      is_mod: true
     },
     {
       user_id: 2,
       username: 'dave',
       hashed_password: '$2a$04$2okk.gGRneFIZIUKXKgoQ.CMyHXgMSsMg5Gmjh9Nbzo99S8UOIfgO',
       email: 'dave@foo.com',
-      isMod: false
+      is_mod: false
     },
     {
       user_id: 3,
       username: 'frank',
       hashed_password: '$2a$04$2okk.gGRneFIZIUKXKgoQ.CMyHXgMSsMg5Gmjh9Nbzo99S8UOIfgO',
       email: 'frank@foo.com',
-      isMod: false
+      is_mod: false
     }
   ]
 

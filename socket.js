@@ -146,6 +146,7 @@ const runProgram = (allProjects) => {
       let firstProjectId = projects[0].project_id;
       socket.emit('changeCurrentProject', 0);
       socket.emit('sendProjectsToClient', projects);
+      socket.broadcast.emit('projectClosedOut');
       socket.broadcast.emit('requestRefresh');
     });
 

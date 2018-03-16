@@ -6,7 +6,7 @@ function tokenForUser(user) {
   const timestamp = new Date().getTime();
   return jwt.encode({
     name: user.username,
-    isMod: user.isMod,
+    isMod: user.is_mod,
     sub: user.user_id,
     iat: timestamp
   }, process.env.JWT_KEY);

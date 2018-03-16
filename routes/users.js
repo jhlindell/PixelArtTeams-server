@@ -140,7 +140,7 @@ function getIdFromToken(token){
 
 function getNameFromToken(token){
   let decodedToken = jwt.decode(token, process.env.JWT_KEY);
-  return decodedToken.name;
+  return { username: decodedToken.name, isMod: decodedToken.isMod };
 }
 
 module.exports = {

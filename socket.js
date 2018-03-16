@@ -133,7 +133,6 @@ const runProgram = (allProjects) => {
         let index = getIndexOfProject(allProjects, obj.projectid);
         allProjects.splice(index, 1);
         let projects = await getUserProjectsArray(allProjects, obj.token);
-        let firstProjectId = projects[0].project_id;
         socket.emit('changeCurrentProject', 0);
         socket.emit('sendProjectsToClient', projects);
         socket.broadcast.emit('requestRefresh');
@@ -172,8 +171,8 @@ const runProgram = (allProjects) => {
     });
 
     socket.on('getUserName', (token) => {
-      let username = getNameFromToken(token);
-      socket.emit('returnUserName', username);
+      let userinfo = getNameFromToken(token);
+      socket.emit('returnUserName', userinfo);
     });
 
     socket.on('getSingleProject', async(id) => {

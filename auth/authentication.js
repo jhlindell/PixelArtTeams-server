@@ -6,6 +6,7 @@ function tokenForUser(user) {
   const timestamp = new Date().getTime();
   return jwt.encode({
     name: user.username,
+    isMod: user.isMod,
     sub: user.user_id,
     iat: timestamp
   }, process.env.JWT_KEY);
@@ -44,7 +45,7 @@ exports.signup = function(req, res, next) {
             const hash = bcrypt.hashSync(req.body.password, salt);
             knex('users')
               .insert({email: req.body.email, hashed_password: hash, username: req.body.username})
-              .returning(['email', 'username', 'user_id', 'isMod'])
+              .returning(['email', 'username', 'user_id', 'is_mod'])
               .then((user) => {
                 res.json({token: tokenForUser(user[0])});
           })

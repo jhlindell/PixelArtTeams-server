@@ -172,7 +172,6 @@ const runProgram = (allProjects) => {
 
     socket.on('getUserName', (token) => {
       let userinfo = getNameFromToken(token);
-      console.log('userinfo: ', userinfo);
       socket.emit('returnUserName', userinfo);
     });
 

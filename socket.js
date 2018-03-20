@@ -13,7 +13,8 @@ const {
   changePixel,
   getProjectFromDbById,
   galleryRatings,
-  sortRatedGallery
+  sortRatedGallery,
+  promoteProjectToPublic
 } = require('./routes/projects');
 
 const {
@@ -84,17 +85,17 @@ const runProgram = (allProjects) => {
       }
     });
 
-    socket.on('getArtForGallery', async () => {
+    socket.on('getArtForGallery', async (obj) => {
       let gallery = await galleryArt();
       let ratedGallery = await galleryRatings(gallery);
-      let sortedGallery = sortRatedGallery(ratedGallery);
+      let sortedGallery = await sortRatedGallery(ratedGallery, obj.sortStyle, obj.token);
       socket.emit("sendingGallery", sortedGallery);
     });
 
     socket.on('getGalleryTop3', async () => {
       let gallery = await galleryArt();
       let ratedGallery = await galleryRatings(gallery);
-      let sortedGallery = sortRatedGallery(ratedGallery);
+      let sortedGallery = await sortRatedGallery(ratedGallery, "rating");
       let top3 = [];
       for(let i = 0; i< 3; i++){
         if(sortedGallery[i]){
@@ -143,10 +144,9 @@ const runProgram = (allProjects) => {
       await sendProjectToDatabase(allProjects, obj.projectid);
       await sendFinishedProjectToDatabase(allProjects, obj.projectid);
       let projects = await getUserProjectsArray(allProjects, obj.token);
-      let firstProjectId = projects[0].project_id;
       socket.emit('changeCurrentProject', 0);
       socket.emit('sendProjectsToClient', projects);
-      socket.broadcast.emit('projectClosedOut');
+      socket.broadcast.emit('projectClosedOut', obj.projectid);
       socket.broadcast.emit('requestRefresh');
     });
 
@@ -198,7 +198,11 @@ const runProgram = (allProjects) => {
     socket.on('getAvgRatingForProject', async(id) => {
       let rating = await avgRating(id);
       socket.emit('returnAvgRating', { rating, project_id: id });
-    })
+    });
+
+    socket.on('makeProjectPublic', (id) => {
+      promoteProjectToPublic(id);
+    });
   });
 }
 

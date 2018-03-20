@@ -2,6 +2,7 @@ const knex = require('../knex');
 const winston = require('winston');
 const jwt = require('jwt-simple');
 const { avgRating } = require('./ratings');
+const { getIdFromToken } = require('./users');
 const moment = require('moment');
 const logger = new (winston.Logger)({
     transports: [
@@ -63,9 +64,11 @@ async function sendProjectToDatabase(projectsArray, id){
 async function sendFinishedProjectToDatabase(projectsArray, projectid){
   let project = getProjectById(projectsArray, projectid);
   let index = getIndexOfProject(projectsArray, projectid);
+  let time = new Date();
+  let timeString = moment.utc(time).format();
   await knex('projects')
   .where('project_id', project.project_id)
-  .update({is_finished: true})
+  .update({is_finished: true, finished_at: timeString})
   .catch(err => {
     logger.error(err);
   })
@@ -208,7 +211,13 @@ async function galleryArt() {
       object.project_name = response[i].project_name;
       object.xsize = response[i].xsize;
       object.ysize = response[i].ysize;
-
+      if(response[i].started_at){
+        object.started_at = response[i].started_at;
+      }
+      if(response[i].finished_at){
+        object.finished_at = response[i].finished_at;
+      }
+      object.is_public = response[i].is_public;
       let grid;
       debugger;
       grid = JSON.parse(response[i].grid);
@@ -237,11 +246,81 @@ async function galleryRatings(gallery){
   return returnGallery;
 }
 
-function sortRatedGallery(gallery){
-  let sortedGallery = gallery.sort((a, b) => {
-    return b.rating - a.rating;
+async function sortRatedGallery(gallery, sortStyle, token){
+  switch(sortStyle){
+    case 'rating':
+      let ratingGallery = gallery.sort((a, b) => {
+        return b.rating - a.rating;
+      });
+      let publicRatingGallery = ratingGallery.filter(art => {
+        if(art.is_public){
+          return art;
+        }
+      });
+      return publicRatingGallery;
+      return ratingGallery;
+
+    case 'new':
+      let newGallery = gallery.sort((a, b) => {
+        if(moment(b.finished_at).isSameOrAfter(a.finished_at)){
+          return 1;
+        } else {
+          return -1;
+        }
+      });
+      let publicNewGallery = newGallery.filter(art => {
+        if(art.is_public){
+          return art;
+        }
+      });
+      return publicNewGallery;
+
+    case 'myGallery':
+      let checkedGallery = await checkMyGallery(gallery, token);
+      return checkedGallery;
+
+    case 'flagged':
+      console.log('flagged option checked');
+
+    default:
+      return [];
+  }
+}
+
+async function checkMyGallery(gallery, token){
+  let userId = getIdFromToken(token);
+  let returnGallery = gallery.map(async (artPiece) => {
+    let permissionExists = await checkUserPermissionOnProject(artPiece.project_id, userId);
+    if(permissionExists){
+      return artPiece;
+    }
+  })
+  await Promise.all(returnGallery).then(resolvedGallery => {
+    returnGallery = resolvedGallery.map(item => {
+      return item;
+    });
   });
-  return sortedGallery;
+  return returnGallery.filter(art => {
+    if(art !== undefined){
+      return art;
+    }
+  });
+}
+
+function checkUserPermissionOnProject(projectId, userId){
+  return knex('users_projects')
+    .where({ 'user_id': userId, project_id: projectId})
+    .returning('*')
+    .then(result => {
+      if(result && result.length){
+        return true;
+      } else {
+        return false;
+      }
+    })
+    .catch(err => {
+      logger.error(err);
+    })
 }
 
 function changePixel(projectsArray, pixel){
@@ -272,6 +351,19 @@ function getProjectFromDbById(projectid){
     })
 }
 
+function promoteProjectToPublic(projectid){
+  return knex('projects')
+    .update('is_public', true)
+    .where('project_id', projectid)
+    .returning('*')
+    .then(result => {
+      return result[0].is_public;
+    })
+    .catch(err => {
+      logger.error(err);
+    })
+}
+
 module.exports = {
   getProjectsFromDatabase,
   sendProjectToDatabase,
@@ -285,5 +377,8 @@ module.exports = {
   changePixel,
   getProjectFromDbById,
   galleryRatings,
-  sortRatedGallery
+  sortRatedGallery,
+  checkMyGallery,
+  checkUserPermissionOnProject,
+  promoteProjectToPublic
 }

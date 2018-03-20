@@ -16,7 +16,10 @@ const {
   galleryArt,
   changePixel,
   getProjectFromDbById,
-  galleryRatings
+  galleryRatings,
+  checkMyGallery,
+  checkUserPermissionOnProject,
+  promoteProjectToPublic
 } = require('../routes/projects');
 
 const {
@@ -35,6 +38,12 @@ const {
   deleteRating,
   getRatingByUser
 } = require('../routes/ratings');
+
+const {
+  flagProject,
+  getFlagCount,
+  checkIfUserFlagged
+} = require('../routes/flags');
 
 const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"],
@@ -259,6 +268,68 @@ describe('database tests', function(){
       assert.equal(rating2, 9);
       let avgResult = await avgRating(1);
       assert.equal(avgResult, 6)
+    });
+  });
+
+  describe('checkUserPermissionOnProject', function(){
+    it('should properly check if a user has permission on a specific project', async function(){
+      let result = await checkUserPermissionOnProject(1,1);
+      assert.equal(result, true);
+      let result2 = await checkUserPermissionOnProject(7,1);
+      assert.equal(result2, false);
+    });
+  });
+
+  describe('checkMyGallery', function(){
+    it('should properly return a gallery of projects a user has permissions for', async function(){
+      let projects = await getProjectsFromDatabase();
+      let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEsImlhdCI6MTUxNjEzNjMxNTc2NX0.ULJrMww3VFATt7cs5aD1gyNz6WZhadMWSjuTP692Z1g';
+      let checkedGallery = await checkMyGallery(projects, token);
+      assert.equal(checkedGallery.length, 1);
+      let davesToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiZGF2ZSIsInN1YiI6MiwiaWF0IjoxNTE2Mzg4NjQ3NTY3fQ.Bru4csmkCbKQZEsrXhZkEaeGpCVsEWrcuHgvMZkJg_I';
+      let davesGallery = await checkMyGallery(projects, davesToken);
+      assert.equal(davesGallery.length, 0);
+    });
+  });
+
+  describe('promoteProjectToPublic', function(){
+    it('should properly set the is_public flag on a project to true', async function(){
+      let gallery1 = await galleryArt();
+      assert.equal(gallery1[0].is_public, false);
+      let result = await promoteProjectToPublic(2);
+      let gallery2 = await galleryArt();
+      assert.equal(gallery2[0].is_public, true);
+    });
+  });
+
+  describe('Add Flag', function(){
+    it('should properly add a flag in the flags database', async function(){
+      let goodTest = await flagProject(1, 1);
+      assert.equal(goodTest, 'success');
+      let badTest = await flagProject(1,1);
+      assert.equal(badTest, 'flag already exists');
+    });
+  });
+
+  describe('Get Flag Count', function(){
+    it('should return the number of flags a project has when given a project id', async function(){
+      let flag1 = await flagProject(1, 1);
+      let flag2 = await flagProject(2, 1);
+      assert.equal(flag1, 'success');
+      assert.equal(flag2, 'success');
+      let flagCount = await getFlagCount(1);
+      assert.equal(flagCount, 2);
+    });
+  });
+
+  describe('checkIfUserFlagged', function(){
+    it('should return true if the user has flagged a project, false otherwise', async function(){
+      let flag1 = await flagProject(1, 1);
+      assert.equal(flag1, 'success');
+      let result1 = await checkIfUserFlagged(1,1);
+      assert.equal(result1, true);
+      let result2 = await checkIfUserFlagged(2,1);
+      assert.equal(result2, false);
     });
   });
 

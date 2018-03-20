@@ -13,7 +13,9 @@ const {
   changePixel,
   getProjectFromDbById,
   galleryRatings,
-  sortRatedGallery
+  sortRatedGallery,
+  promoteProjectToPublic,
+  galleryFlags
 } = require('./routes/projects');
 
 const {
@@ -32,6 +34,11 @@ const {
   getRatingByUser,
   avgRating
 } = require('./routes/ratings');
+
+const {
+  flagProject,
+  checkIfUserFlagged
+} = require('./routes/flags');
 
 const winston = require('winston');
 const logger = new (winston.Logger)({
@@ -84,17 +91,19 @@ const runProgram = (allProjects) => {
       }
     });
 
-    socket.on('getArtForGallery', async () => {
+    socket.on('getArtForGallery', async (obj) => {
       let gallery = await galleryArt();
       let ratedGallery = await galleryRatings(gallery);
-      let sortedGallery = sortRatedGallery(ratedGallery);
+      let flaggedGallery = await galleryFlags(ratedGallery);
+      let sortedGallery = await sortRatedGallery(flaggedGallery, obj.sortStyle, obj.token);
       socket.emit("sendingGallery", sortedGallery);
     });
 
     socket.on('getGalleryTop3', async () => {
       let gallery = await galleryArt();
       let ratedGallery = await galleryRatings(gallery);
-      let sortedGallery = sortRatedGallery(ratedGallery);
+      let flaggedGallery = await galleryFlags(ratedGallery);
+      let sortedGallery = await sortRatedGallery(flaggedGallery, "rating");
       let top3 = [];
       for(let i = 0; i< 3; i++){
         if(sortedGallery[i]){
@@ -143,10 +152,9 @@ const runProgram = (allProjects) => {
       await sendProjectToDatabase(allProjects, obj.projectid);
       await sendFinishedProjectToDatabase(allProjects, obj.projectid);
       let projects = await getUserProjectsArray(allProjects, obj.token);
-      let firstProjectId = projects[0].project_id;
       socket.emit('changeCurrentProject', 0);
       socket.emit('sendProjectsToClient', projects);
-      socket.broadcast.emit('projectClosedOut');
+      socket.broadcast.emit('projectClosedOut', obj.projectid);
       socket.broadcast.emit('requestRefresh');
     });
 
@@ -198,7 +206,22 @@ const runProgram = (allProjects) => {
     socket.on('getAvgRatingForProject', async(id) => {
       let rating = await avgRating(id);
       socket.emit('returnAvgRating', { rating, project_id: id });
-    })
+    });
+
+    socket.on('makeProjectPublic', (id) => {
+      promoteProjectToPublic(id);
+    });
+
+    socket.on('flaggingProject', async (obj) => {
+      let userId = await getIdFromToken(obj.token);
+      let flagResult = flagProject(userId, obj.projectId);
+    });
+
+    socket.on('didUserFlag', async (obj) => {
+      let userId = await getIdFromToken(obj.token);
+      let flagCheck = await checkIfUserFlagged(userId, obj.project_id);
+      socket.emit('flagCheckResult', flagCheck);
+    });
   });
 }
 

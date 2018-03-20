@@ -3,7 +3,9 @@ const winston = require('winston');
 const jwt = require('jwt-simple');
 const { avgRating } = require('./ratings');
 const { getIdFromToken } = require('./users');
+const { getFlagCount } = require('./flags');
 const moment = require('moment');
+const FLAG_THRESHOLD = 2;
 const logger = new (winston.Logger)({
     transports: [
       new (winston.transports.File)({ filename: 'pixel.log' })
@@ -246,6 +248,21 @@ async function galleryRatings(gallery){
   return returnGallery;
 }
 
+async function galleryFlags(gallery){
+  let returnGallery = [];
+  let flaggedGallery = gallery.map(async (artPiece) => {
+    let count = await getFlagCount(artPiece.project_id);
+    artPiece.flagCount = count;
+    return artPiece;
+  });
+  await Promise.all(flaggedGallery).then(resolvedGallery => {
+    returnGallery = resolvedGallery.map(item => {
+      return item;
+    })
+  });
+  return returnGallery;
+}
+
 async function sortRatedGallery(gallery, sortStyle, token){
   switch(sortStyle){
     case 'rating':
@@ -253,7 +270,7 @@ async function sortRatedGallery(gallery, sortStyle, token){
         return b.rating - a.rating;
       });
       let publicRatingGallery = ratingGallery.filter(art => {
-        if(art.is_public){
+        if(art.is_public && art.flagCount < FLAG_THRESHOLD){
           return art;
         }
       });
@@ -269,7 +286,7 @@ async function sortRatedGallery(gallery, sortStyle, token){
         }
       });
       let publicNewGallery = newGallery.filter(art => {
-        if(art.is_public){
+        if(art.is_public && art.flagCount < FLAG_THRESHOLD){
           return art;
         }
       });
@@ -280,7 +297,11 @@ async function sortRatedGallery(gallery, sortStyle, token){
       return checkedGallery;
 
     case 'flagged':
-      console.log('flagged option checked');
+      return gallery.filter((art) => {
+        if(art.flagCount >= FLAG_THRESHOLD){
+          return art;
+        }
+      });
 
     default:
       return [];
@@ -380,5 +401,6 @@ module.exports = {
   sortRatedGallery,
   checkMyGallery,
   checkUserPermissionOnProject,
-  promoteProjectToPublic
+  promoteProjectToPublic,
+  galleryFlags
 }

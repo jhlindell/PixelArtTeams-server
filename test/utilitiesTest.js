@@ -39,6 +39,12 @@ const {
   getRatingByUser
 } = require('../routes/ratings');
 
+const {
+  flagProject,
+  getFlagCount,
+  checkIfUserFlagged
+} = require('../routes/flags');
+
 const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"],
@@ -293,6 +299,37 @@ describe('database tests', function(){
       let result = await promoteProjectToPublic(2);
       let gallery2 = await galleryArt();
       assert.equal(gallery2[0].is_public, true);
+    });
+  });
+
+  describe('Add Flag', function(){
+    it('should properly add a flag in the flags database', async function(){
+      let goodTest = await flagProject(1, 1);
+      assert.equal(goodTest, 'success');
+      let badTest = await flagProject(1,1);
+      assert.equal(badTest, 'flag already exists');
+    });
+  });
+
+  describe('Get Flag Count', function(){
+    it('should return the number of flags a project has when given a project id', async function(){
+      let flag1 = await flagProject(1, 1);
+      let flag2 = await flagProject(2, 1);
+      assert.equal(flag1, 'success');
+      assert.equal(flag2, 'success');
+      let flagCount = await getFlagCount(1);
+      assert.equal(flagCount, 2);
+    });
+  });
+
+  describe('checkIfUserFlagged', function(){
+    it('should return true if the user has flagged a project, false otherwise', async function(){
+      let flag1 = await flagProject(1, 1);
+      assert.equal(flag1, 'success');
+      let result1 = await checkIfUserFlagged(1,1);
+      assert.equal(result1, true);
+      let result2 = await checkIfUserFlagged(2,1);
+      assert.equal(result2, false);
     });
   });
 

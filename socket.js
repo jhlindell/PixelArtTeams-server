@@ -14,7 +14,8 @@ const {
   getProjectFromDbById,
   galleryRatings,
   sortRatedGallery,
-  promoteProjectToPublic
+  promoteProjectToPublic,
+  galleryFlags
 } = require('./routes/projects');
 
 const {
@@ -33,6 +34,11 @@ const {
   getRatingByUser,
   avgRating
 } = require('./routes/ratings');
+
+const {
+  flagProject,
+  checkIfUserFlagged
+} = require('./routes/flags');
 
 const winston = require('winston');
 const logger = new (winston.Logger)({
@@ -88,14 +94,16 @@ const runProgram = (allProjects) => {
     socket.on('getArtForGallery', async (obj) => {
       let gallery = await galleryArt();
       let ratedGallery = await galleryRatings(gallery);
-      let sortedGallery = await sortRatedGallery(ratedGallery, obj.sortStyle, obj.token);
+      let flaggedGallery = await galleryFlags(ratedGallery);
+      let sortedGallery = await sortRatedGallery(flaggedGallery, obj.sortStyle, obj.token);
       socket.emit("sendingGallery", sortedGallery);
     });
 
     socket.on('getGalleryTop3', async () => {
       let gallery = await galleryArt();
       let ratedGallery = await galleryRatings(gallery);
-      let sortedGallery = await sortRatedGallery(ratedGallery, "rating");
+      let flaggedGallery = await galleryFlags(ratedGallery);
+      let sortedGallery = await sortRatedGallery(flaggedGallery, "rating");
       let top3 = [];
       for(let i = 0; i< 3; i++){
         if(sortedGallery[i]){
@@ -202,6 +210,17 @@ const runProgram = (allProjects) => {
 
     socket.on('makeProjectPublic', (id) => {
       promoteProjectToPublic(id);
+    });
+
+    socket.on('flaggingProject', async (obj) => {
+      let userId = await getIdFromToken(obj.token);
+      let flagResult = flagProject(userId, obj.projectId);
+    });
+
+    socket.on('didUserFlag', async (obj) => {
+      let userId = await getIdFromToken(obj.token);
+      let flagCheck = await checkIfUserFlagged(userId, obj.project_id);
+      socket.emit('flagCheckResult', flagCheck);
     });
   });
 }

@@ -45,6 +45,10 @@ const {
   checkIfUserFlagged
 } = require('../routes/flags');
 
+const {
+  sendMail
+} = require('../routes/mail');
+
 const fiveBy = [["#FFF","#FFF","#FFF","#FFF","#FFF"], ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"],
 ["#FFF","#FFF","#FFF","#FFF","#FFF"],
@@ -339,5 +343,11 @@ describe('auth tests', function(){
   it('should properly grab the user_id off a token', function(){
     tokenId = getIdFromToken(testToken);
     assert.equal(tokenId, 7);
+  });
+});
+
+describe('Mail Tests', function(){
+  it('should properly send an email', function(){
+    sendMail();
   });
 });

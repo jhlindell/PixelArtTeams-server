@@ -11,7 +11,7 @@ function sendMail(){
   };
   sgMail.send(msg);
   console.log(sgMail);
-  console.log("mail sent");
+  console.log("mail  sent");
 }
 
 module.exports = {

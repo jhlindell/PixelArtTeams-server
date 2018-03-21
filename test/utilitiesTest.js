@@ -306,7 +306,7 @@ describe('database tests', function(){
     it('should properly add a flag in the flags database', async function(){
       let goodTest = await flagProject(1, 1);
       assert.equal(goodTest, 'success');
-      let badTest = await flagProject(1,1);
+      let badTest = await flagProject(1, 1);
       assert.equal(badTest, 'flag already exists');
     });
   });

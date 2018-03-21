@@ -275,7 +275,6 @@ async function sortRatedGallery(gallery, sortStyle, token){
         }
       });
       return publicRatingGallery;
-      return ratingGallery;
 
     case 'new':
       let newGallery = gallery.sort((a, b) => {

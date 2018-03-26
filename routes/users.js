@@ -1,6 +1,7 @@
 'use strict';
 const knex = require('../knex');
 const jwt = require('jwt-simple');
+const bcrypt = require('bcryptjs');
 const winston = require('winston');
 const logger = new (winston.Logger)({
     transports: [
@@ -143,6 +144,81 @@ function getNameFromToken(token){
   return { username: decodedToken.name, isMod: decodedToken.isMod };
 }
 
+function addHashToUser(userId, hash){
+  return knex('users')
+    .update({ hash: hash })
+    .where({ user_id: userId })
+    .returning('*')
+    .catch(err => {
+      logger.error(err);
+    })
+    .then(response => {
+      if(response && response.length){
+        return true;
+      } else {
+        return false;
+      }
+    });
+}
+
+function checkForUserHash(hash){
+  return knex('users')
+    .where('hash', hash)
+    .returning('user_id')
+    .catch(err => {
+      logger.error(err);
+    })
+    .then(response => {
+      if(response && response.length){
+        return response[0].user_id;
+      } else return 0;
+    });
+}
+
+function verifyUser(userId){
+  return knex('users')
+    .update('is_verified', true)
+    .where('user_id', userId)
+    .returning('*')
+    .catch(err => {
+      logger.error(err);
+    })
+    .then(response => {
+      if(response && response.length){
+        return true;
+      } else {
+        return false;
+      }
+    });
+}
+
+async function resetPassword(password, hash){
+  let salt = bcrypt.genSaltSync();
+  let hashedPassword = bcrypt.hashSync(password, salt);
+  let user = await knex('users')
+    .where('hash', hash)
+    .returning('*')
+    .catch(err => {
+      logger.error(err);
+    });
+  if(user && user.length){
+    let insertResult = await knex('users')
+      .where('hash', hash)
+      .update('hashed_password', hashedPassword)
+      .returning('*')
+      .catch(err => {
+        logger.error(err);
+      });
+    if(insertResult && insertResult.length){
+      return 'success';
+    } else {
+      return 'problem updating password';
+    }
+  } else {
+    return 'invalid hash';
+  }
+}
+
 module.exports = {
   addUserPermission,
   removeUserPermission,
@@ -151,5 +227,9 @@ module.exports = {
   getUserProjectsArray,
   getIdFromToken,
   getNameFromToken,
-  addPermissionsByList
+  addPermissionsByList,
+  addHashToUser,
+  checkForUserHash,
+  verifyUser,
+  resetPassword
 }

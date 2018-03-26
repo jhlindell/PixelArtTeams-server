@@ -10,8 +10,6 @@ const router = require('./router');
 const cors = require('cors');
 const Port = process.env.PORT || 8000;
 
-// const allowedOrigins = ["https://pixelart-app.herokuapp.com/art", "https://pixelart-app.herokuapp.com/gallery", "https://pixelart-app.herokuapp.com/"];
-
 io.set('origins', '*:*');
 app.use(cors());
 app.use(bodyParser.json());
@@ -23,7 +21,6 @@ io.attach(server, {
 	cookie: false,
 });
 
-//api server
 server.listen(Port, () => {
   console.log("Now listening on port " + Port);
 });

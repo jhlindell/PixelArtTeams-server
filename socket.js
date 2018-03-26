@@ -26,7 +26,10 @@ const {
   getIdFromToken,
   getIdFromUsername,
   removeUserPermission,
-  addPermissionsByList
+  addPermissionsByList,
+  checkForUserHash,
+  verifyUser,
+  resetPassword
 } = require('./routes/users');
 
 const {
@@ -39,6 +42,13 @@ const {
   flagProject,
   checkIfUserFlagged
 } = require('./routes/flags');
+
+const {
+  sendVerificationEmail,
+  forgotUsername,
+  resendVerificationEmail,
+  passwordResetEmail
+} = require('./routes/mail');
 
 const winston = require('winston');
 const logger = new (winston.Logger)({
@@ -222,6 +232,47 @@ const runProgram = (allProjects) => {
       let flagCheck = await checkIfUserFlagged(userId, obj.project_id);
       socket.emit('flagCheckResult', flagCheck);
     });
+
+    socket.on('sendVerificationEmail', (obj) => {
+      sendVerificationEmail(obj.username, obj.email, obj.token);
+    });
+
+    socket.on('checkForHash', async (hash) => {
+      let hashCheckResult = false;
+      let hashCheck = await checkForUserHash(hash);
+      if(hashCheck){
+        let verifyResult = await verifyUser(hashCheck);
+        if(verifyResult){
+          hashCheckResult = true;
+        }
+      }
+      if(hashCheckResult){
+        socket.emit('hashCheckResult', 'User Verified');
+      } else {
+        socket.emit('hashCheckResult', 'User Verification Failed');
+      }
+    });
+
+    socket.on('forgotUsername', async (email) => {
+      let result = await forgotUsername(email);
+      console.log('forgotUsername result: ', result);
+    });
+
+    socket.on('resendVerificationEmail', async (email) => {
+      let result = await resendVerificationEmail(email);
+      console.log("resendVerificationEmail result: ", result);
+    });
+
+    socket.on('passwordResetEmail', async (email) => {
+      let result = await passwordResetEmail(email);
+      console.log("passwordResetEmail result: ", result);
+    });
+
+    socket.on('sendPasswordReset', async (obj) => {
+      let result = await resetPassword(obj.password, obj.hash);
+      console.log('sendPasswordReset result: ', result);
+    });
+
   });
 }
 

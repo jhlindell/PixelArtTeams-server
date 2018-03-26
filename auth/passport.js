@@ -36,7 +36,7 @@ const JwtLogin = new JwtStrategy(jwtOptions, function(payload, done) {
   //if it does, call done with that
   //otherwise, call done without a user object
   knex('users')
-    .select('email', 'username', 'user_id', 'is_mod')
+    .select('email', 'username', 'user_id', 'is_mod', 'is_verified')
     .where('username', payload.sub)
     .then((user) => {
       if(user) {done(null, user);}

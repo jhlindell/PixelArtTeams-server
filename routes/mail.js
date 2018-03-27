@@ -38,10 +38,9 @@ async function sendVerificationEmail(username, email, token){
       if(err){
         logger.error(err);
         return 'Problem Sending Email';
-      } else {
-        return 'Verification Email Sent';
-      }
+      } 
     });
+    return 'Verification Email Sent';
   } else return 'user does not exist';
 }
 

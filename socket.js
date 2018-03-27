@@ -26,7 +26,10 @@ const {
   getIdFromToken,
   getIdFromUsername,
   removeUserPermission,
-  addPermissionsByList
+  addPermissionsByList,
+  checkForUserHash,
+  verifyUser,
+  resetPassword
 } = require('./routes/users');
 
 const {
@@ -39,6 +42,13 @@ const {
   flagProject,
   checkIfUserFlagged
 } = require('./routes/flags');
+
+const {
+  sendVerificationEmail,
+  forgotUsername,
+  resendVerificationEmail,
+  passwordResetEmail
+} = require('./routes/mail');
 
 const winston = require('winston');
 const logger = new (winston.Logger)({
@@ -68,7 +78,7 @@ const runProgram = (allProjects) => {
           if(index >= 0){
             socket.emit('gridUpdated', allProjects[index].grid);
           } else {
-            console.log("can't get index of room: ", room);
+            logger.error(`can't get index of room: , ${room}`);
           }
         }
       }
@@ -118,8 +128,8 @@ const runProgram = (allProjects) => {
       await addPermissionsByList(id, obj.collaborators);
       let projects = await getUserProjectsArray(allProjects, obj.token);
       socket.emit('sendProjectsToClient', projects);
-      socket.broadcast.emit('requestRefresh');
       socket.emit('changeCurrentProject', id);
+      socket.emit('addMessageToContainer', 'Project Added');
     });
 
     socket.on('refreshProjects', async (token) => {
@@ -133,7 +143,6 @@ const runProgram = (allProjects) => {
       sendProjectToDatabase(allProjects, obj.projectid).then( async() => {
         let projects = await getUserProjectsArray(allProjects, obj.token);
         socket.emit('sendProjectsToClient', projects);
-        socket.broadcast.emit('requestRefresh');
       });
     });
 
@@ -144,7 +153,8 @@ const runProgram = (allProjects) => {
         let projects = await getUserProjectsArray(allProjects, obj.token);
         socket.emit('changeCurrentProject', 0);
         socket.emit('sendProjectsToClient', projects);
-        socket.broadcast.emit('requestRefresh');
+        socket.broadcast.emit('projectClosedOut', obj.projectid);
+        socket.emit('addMessageToContainer', 'Project Deleted');
       });
     })
 
@@ -155,7 +165,7 @@ const runProgram = (allProjects) => {
       socket.emit('changeCurrentProject', 0);
       socket.emit('sendProjectsToClient', projects);
       socket.broadcast.emit('projectClosedOut', obj.projectid);
-      socket.broadcast.emit('requestRefresh');
+      socket.emit('addMessageToContainer', `Project Closed Out and Sent To Gallery`);
     });
 
     socket.on('addUserToProject', async (obj) => {
@@ -208,8 +218,14 @@ const runProgram = (allProjects) => {
       socket.emit('returnAvgRating', { rating, project_id: id });
     });
 
-    socket.on('makeProjectPublic', (id) => {
-      promoteProjectToPublic(id);
+    socket.on('makeProjectPublic', async (id) => {
+      let result = await promoteProjectToPublic(id);
+      if(result){
+        socket.emit('addMessageToContainer', result);
+      } else {
+        socket.emit('addMessageToContainer', result);
+      }
+
     });
 
     socket.on('flaggingProject', async (obj) => {
@@ -222,6 +238,48 @@ const runProgram = (allProjects) => {
       let flagCheck = await checkIfUserFlagged(userId, obj.project_id);
       socket.emit('flagCheckResult', flagCheck);
     });
+
+    socket.on('sendVerificationEmail', (obj) => {
+      let result = sendVerificationEmail(obj.username, obj.email, obj.token);
+      socket.emit('addMessageToContainer', result);
+    });
+
+    socket.on('checkForHash', async (hash) => {
+      let hashCheckResult = false;
+      let hashCheck = await checkForUserHash(hash);
+      if(hashCheck){
+        let verifyResult = await verifyUser(hashCheck);
+        if(verifyResult){
+          hashCheckResult = true;
+        }
+      }
+      if(hashCheckResult){
+        socket.emit('hashCheckResult', 'User Verified');
+      } else {
+        socket.emit('hashCheckResult', 'User Verification Failed');
+      }
+    });
+
+    socket.on('forgotUsername', async (email) => {
+      let result = await forgotUsername(email);
+      socket.emit('addMessageToContainer', result);
+    });
+
+    socket.on('resendVerificationEmail', async (email) => {
+      let result = await resendVerificationEmail(email);
+      socket.emit('addMessageToContainer', result);
+    });
+
+    socket.on('passwordResetEmail', async (email) => {
+      let result = await passwordResetEmail(email);
+      socket.emit('addMessageToContainer', result);
+    });
+
+    socket.on('sendPasswordReset', async (obj) => {
+      let result = await resetPassword(obj.password, obj.hash);
+      socket.emit('addMessageToContainer', result);
+    });
+
   });
 }
 

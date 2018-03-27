@@ -378,7 +378,11 @@ function promoteProjectToPublic(projectid){
     .where('project_id', projectid)
     .returning('*')
     .then(result => {
-      return result[0].is_public;
+      if(result && result[0].is_public){
+        return 'Project Promoted To Public Gallery';
+      } else {
+        return 'Problem Promoting Project To Public Gallery';
+      }
     })
     .catch(err => {
       logger.error(err);

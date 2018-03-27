@@ -29,7 +29,10 @@ const {
   getNameFromToken,
   getIdFromToken,
   removeUserPermission,
-  getIdFromUsername
+  getIdFromUsername,
+  addHashToUser,
+  checkForUserHash,
+  verifyUser
 } = require('../routes/users');
 
 const {
@@ -333,6 +336,32 @@ describe('database tests', function(){
     });
   });
 
+  describe('addHashToUser', function(){
+    it('should add a hash to a user in the database', async function(){
+      let result = await addHashToUser(1, "omgwtfbbq");
+      assert.equal(result, true);
+      let result2 = await addHashToUser(7, "ascopaubsdfawefb");
+      assert.equal(result2, false);
+    });
+  });
+
+  describe('checkForUserHash', function(){
+    it('should return a userid if the hash is found in the database, otherwise false', async function(){
+      let result = await addHashToUser(1, "omgwtfbbq");
+      assert.equal(result, true);
+      let result2 = await checkForUserHash('omgwtfbbq');
+      assert.equal(result2, 1);
+    });
+  });
+
+  describe('verifyUser', function(){
+    it('should flip a users verification status from false to true', async function(){
+      let result1 = await verifyUser(1);
+      assert.equal(result1, true);
+      let result2 = await verifyUser(7);
+      assert.equal(result2, false);
+    });
+  });
 });
 
 describe('auth tests', function(){

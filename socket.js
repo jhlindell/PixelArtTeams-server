@@ -78,7 +78,7 @@ const runProgram = (allProjects) => {
           if(index >= 0){
             socket.emit('gridUpdated', allProjects[index].grid);
           } else {
-            console.log("can't get index of room: ", room);
+            logger.error(`can't get index of room: , ${room}`);
           }
         }
       }
@@ -128,8 +128,8 @@ const runProgram = (allProjects) => {
       await addPermissionsByList(id, obj.collaborators);
       let projects = await getUserProjectsArray(allProjects, obj.token);
       socket.emit('sendProjectsToClient', projects);
-      socket.broadcast.emit('requestRefresh');
       socket.emit('changeCurrentProject', id);
+      socket.emit('addMessageToContainer', 'Project Added');
     });
 
     socket.on('refreshProjects', async (token) => {
@@ -143,7 +143,6 @@ const runProgram = (allProjects) => {
       sendProjectToDatabase(allProjects, obj.projectid).then( async() => {
         let projects = await getUserProjectsArray(allProjects, obj.token);
         socket.emit('sendProjectsToClient', projects);
-        socket.broadcast.emit('requestRefresh');
       });
     });
 
@@ -154,7 +153,8 @@ const runProgram = (allProjects) => {
         let projects = await getUserProjectsArray(allProjects, obj.token);
         socket.emit('changeCurrentProject', 0);
         socket.emit('sendProjectsToClient', projects);
-        socket.broadcast.emit('requestRefresh');
+        socket.broadcast.emit('projectClosedOut', obj.projectid);
+        socket.emit('addMessageToContainer', 'Project Deleted');
       });
     })
 
@@ -165,7 +165,7 @@ const runProgram = (allProjects) => {
       socket.emit('changeCurrentProject', 0);
       socket.emit('sendProjectsToClient', projects);
       socket.broadcast.emit('projectClosedOut', obj.projectid);
-      socket.broadcast.emit('requestRefresh');
+      socket.emit('addMessageToContainer', `Project Closed Out and Sent To Gallery`);
     });
 
     socket.on('addUserToProject', async (obj) => {
@@ -218,8 +218,14 @@ const runProgram = (allProjects) => {
       socket.emit('returnAvgRating', { rating, project_id: id });
     });
 
-    socket.on('makeProjectPublic', (id) => {
-      promoteProjectToPublic(id);
+    socket.on('makeProjectPublic', async (id) => {
+      let result = await promoteProjectToPublic(id);
+      if(result){
+        socket.emit('addMessageToContainer', result);
+      } else {
+        socket.emit('addMessageToContainer', result);
+      }
+
     });
 
     socket.on('flaggingProject', async (obj) => {
@@ -234,7 +240,8 @@ const runProgram = (allProjects) => {
     });
 
     socket.on('sendVerificationEmail', (obj) => {
-      sendVerificationEmail(obj.username, obj.email, obj.token);
+      let result = sendVerificationEmail(obj.username, obj.email, obj.token);
+      socket.emit('addMessageToContainer', result);
     });
 
     socket.on('checkForHash', async (hash) => {
@@ -255,22 +262,22 @@ const runProgram = (allProjects) => {
 
     socket.on('forgotUsername', async (email) => {
       let result = await forgotUsername(email);
-      console.log('forgotUsername result: ', result);
+      socket.emit('addMessageToContainer', result);
     });
 
     socket.on('resendVerificationEmail', async (email) => {
       let result = await resendVerificationEmail(email);
-      console.log("resendVerificationEmail result: ", result);
+      socket.emit('addMessageToContainer', result);
     });
 
     socket.on('passwordResetEmail', async (email) => {
       let result = await passwordResetEmail(email);
-      console.log("passwordResetEmail result: ", result);
+      socket.emit('addMessageToContainer', result);
     });
 
     socket.on('sendPasswordReset', async (obj) => {
       let result = await resetPassword(obj.password, obj.hash);
-      console.log('sendPasswordReset result: ', result);
+      socket.emit('addMessageToContainer', result);
     });
 
   });

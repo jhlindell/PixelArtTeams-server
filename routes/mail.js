@@ -3,6 +3,7 @@ const winston = require('winston');
 const bcrypt = require ('bcrypt');
 const knex = require('../knex');
 const saltRounds = 10;
+const URL = process.env.URL;
 const { getIdFromToken, addHashToUser } = require('./users');
 const logger = new (winston.Logger)({
     transports: [
@@ -22,22 +23,23 @@ async function sendVerificationEmail(username, email, token){
   let userId = getIdFromToken(token);
   let hashString = username + email;
   let hash = bcrypt.hashSync(hashString, saltRounds);
-  let hashSaveResult = await addHashToUser(userId, hash);
+  let modifiedHash = hash.replace(/\//g, '');
+  let hashSaveResult = await addHashToUser(userId, modifiedHash);
 
   if(hashSaveResult){
     const mailOptions = {
       from: 'PixelArtTeamsDev@gmail.com',
       to: email,
       subject: 'Pixel Art Teams Signup Verification',
-      html: `<p>Please click on the following link to finish verification:</p><a href='http://localhost:3000/verifyEmail/${hash}'>Verification Link</a>`
+      html: `<p>Please click on the following link to finish verification:</p><a href='${URL}/verifyEmail/${modifiedHash}'>Verification Link</a>`
     };
 
     transporter.sendMail(mailOptions, function (err, info) {
       if(err){
         logger.error(err);
-        return 'email not sent';
+        return 'Problem Sending Email';
       } else {
-        return 'success';
+        return 'Verification Email Sent';
       }
     });
   } else return 'user does not exist';
@@ -67,7 +69,7 @@ async function forgotUsername(email){
   } else {
     return 'email does not exist';
   }
-  return 'success';
+  return 'Username Email Sent';
 }
 
 async function resendVerificationEmail(email){
@@ -84,13 +86,14 @@ async function resendVerificationEmail(email){
     userId = user[0].user_id;
     let hashString = username + email;
     let hash = bcrypt.hashSync(hashString, saltRounds);
-    let hashSaveResult = await addHashToUser(userId, hash);
+    let modifiedHash = hash.replace(/\//g, '');
+    let hashSaveResult = await addHashToUser(userId, modifiedHash);
     if(hashSaveResult){
       const mailOptions = {
         from: 'PixelArtTeamsDev@gmail.com',
         to: email,
         subject: 'Pixel Art Teams Signup Verification',
-        html: `<p>Please click on the following link to finish verification:</p><p><a href='http://localhost:3000/verifyEmail/${hash}'>Verification Link</a></p>`
+        html: `<p>Please click on the following link to finish verification:</p><p><a href='${URL}/verifyEmail/${modifiedHash}'>Verification Link</a></p>`
       };
       await transporter.sendMail(mailOptions, function (err, info) {
         if(err){
@@ -101,7 +104,7 @@ async function resendVerificationEmail(email){
   } else {
     return 'user does not exist';
   }
-  return 'success';
+  return 'Verification Email Sent';
 }
 
 async function passwordResetEmail(email){
@@ -125,7 +128,7 @@ async function passwordResetEmail(email){
         from: 'PixelArtTeamsDev@gmail.com',
         to: email,
         subject: 'Pixel Art Teams Password Reset',
-        html: `<p>Please click on the following link to reset password:</p><p><a href='http://localhost:3000/passwordReset/${modifiedHash}'>Password Reset Link</a></p>`
+        html: `<p>Please click on the following link to reset password:</p><p><a href='${URL}/passwordReset/${modifiedHash}'>Password Reset Link</a></p>`
       };
       await transporter.sendMail(mailOptions, function (err, info) {
         if(err){
@@ -136,7 +139,7 @@ async function passwordResetEmail(email){
   } else {
     return 'user does not exist';
   }
-  return 'success';
+  return 'Password Reset Email Sent';
 }
 
 module.exports = {

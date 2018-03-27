@@ -239,8 +239,8 @@ const runProgram = (allProjects) => {
       socket.emit('flagCheckResult', flagCheck);
     });
 
-    socket.on('sendVerificationEmail', (obj) => {
-      let result = sendVerificationEmail(obj.username, obj.email, obj.token);
+    socket.on('sendVerificationEmail', async (obj) => {
+      let result = await sendVerificationEmail(obj.username, obj.email, obj.token);
       socket.emit('addMessageToContainer', result);
     });
 

@@ -280,6 +280,10 @@ const runProgram = (allProjects) => {
       socket.emit('addMessageToContainer', result);
     });
 
+    socket.on('submitChatMessage', async (obj) => {
+      io.in(obj.currentProject).emit('chatMessage', { username: obj.username, message: obj.message });
+    })
+
   });
 }
 

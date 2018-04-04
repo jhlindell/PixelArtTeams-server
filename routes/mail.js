@@ -38,7 +38,7 @@ async function sendVerificationEmail(username, email, token){
       if(err){
         logger.error(err);
         return 'Problem Sending Email';
-      } 
+      }
     });
     return 'Verification Email Sent';
   } else return 'user does not exist';
@@ -141,9 +141,26 @@ async function passwordResetEmail(email){
   return 'Password Reset Email Sent';
 }
 
+function sendSupportEmail(name, email, message){
+  const mailOptions = {
+    from: email,
+    to: 'PixelArtTeamsDev@gmail.com',
+    subject: `Support Email from ${name}`,
+    html: `<p>${email} sent the following message:</p><p>${message}</p>`
+  };
+  transporter.sendMail(mailOptions, function (err, info) {
+    if(err){
+      logger.error(err);
+      return 'Error Sending Support Email';
+    }
+  });
+  return 'Support Email Sent';
+}
+
 module.exports = {
   sendVerificationEmail,
   forgotUsername,
   resendVerificationEmail,
-  passwordResetEmail
+  passwordResetEmail,
+  sendSupportEmail
 }

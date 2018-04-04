@@ -47,7 +47,8 @@ const {
   sendVerificationEmail,
   forgotUsername,
   resendVerificationEmail,
-  passwordResetEmail
+  passwordResetEmail,
+  sendSupportEmail
 } = require('./routes/mail');
 
 const winston = require('winston');
@@ -283,6 +284,11 @@ const runProgram = (allProjects) => {
     socket.on('submitChatMessage', async (obj) => {
       io.in(obj.currentProject).emit('chatMessage', { username: obj.username, message: obj.message });
     })
+
+    socket.on('sendSupportEmail', async (obj) => {
+      let result = await sendSupportEmail(obj.name, obj.email, obj.message);
+      socket.emit('addMessageToContainer', result);
+    });
 
   });
 }

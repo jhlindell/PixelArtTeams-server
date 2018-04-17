@@ -8,9 +8,12 @@ const io = require('./socket');
 const bodyParser = require('body-parser');
 const router = require('./router');
 const cors = require('cors');
+const helmet = require('helmet');
 const Port = process.env.PORT || 8000;
 
-io.set('origins', '*:*');
+// io.set('origins', process.env.URL);
+io.origins(process.env.URL);
+app.use(helmet());
 app.use(cors());
 app.use(bodyParser.json());
 router(app);

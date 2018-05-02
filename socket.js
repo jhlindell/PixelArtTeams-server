@@ -95,7 +95,7 @@ const runProgram = (allProjects) => {
 
     socket.on('initialize', async (token) => {
       if(token){
-        let projects = await getUserProjectsArray(allProjects, token);
+        const projects = await getUserProjectsArray(allProjects, token);
         socket.emit('sendProjectsToClient', projects);
       } else {
         socket.emit('sendProjectsToClient', []);
@@ -103,18 +103,18 @@ const runProgram = (allProjects) => {
     });
 
     socket.on('getArtForGallery', async (obj) => {
-      let gallery = await galleryArt();
-      let ratedGallery = await galleryRatings(gallery);
-      let flaggedGallery = await galleryFlags(ratedGallery);
-      let sortedGallery = await sortRatedGallery(flaggedGallery, obj.sortStyle, obj.token);
+      const gallery = await galleryArt();
+      const ratedGallery = await galleryRatings(gallery);
+      const flaggedGallery = await galleryFlags(ratedGallery);
+      const sortedGallery = await sortRatedGallery(flaggedGallery, obj.sortStyle, obj.token);
       socket.emit("sendingGallery", sortedGallery);
     });
 
     socket.on('getGalleryTop3', async () => {
-      let gallery = await galleryArt();
-      let ratedGallery = await galleryRatings(gallery);
-      let flaggedGallery = await galleryFlags(ratedGallery);
-      let sortedGallery = await sortRatedGallery(flaggedGallery, "rating");
+      const gallery = await galleryArt();
+      const ratedGallery = await galleryRatings(gallery);
+      const flaggedGallery = await galleryFlags(ratedGallery);
+      const sortedGallery = await sortRatedGallery(flaggedGallery, "rating");
       let top3 = [];
       for(let i = 0; i< 3; i++){
         if(sortedGallery[i]){
@@ -125,9 +125,9 @@ const runProgram = (allProjects) => {
     })
 
     socket.on('addNewProject', async (obj) => {
-      let id = await addNewProject(allProjects, obj);
+      const id = await addNewProject(allProjects, obj);
       await addPermissionsByList(id, obj.collaborators);
-      let projects = await getUserProjectsArray(allProjects, obj.token);
+      const projects = await getUserProjectsArray(allProjects, obj.token);
       socket.emit('sendProjectsToClient', projects);
       socket.emit('changeCurrentProject', id);
       socket.emit('addMessageToContainer', 'Project Added');
@@ -135,23 +135,23 @@ const runProgram = (allProjects) => {
 
     socket.on('refreshProjects', async (token) => {
       if(token){
-        let projects = await getUserProjectsArray(allProjects, token);
+        const projects = await getUserProjectsArray(allProjects, token);
         socket.emit('sendProjectsToClient', projects);
       }
     })
 
     socket.on('saveProject', (obj) => {
       sendProjectToDatabase(allProjects, obj.projectid).then( async() => {
-        let projects = await getUserProjectsArray(allProjects, obj.token);
+        const projects = await getUserProjectsArray(allProjects, obj.token);
         socket.emit('sendProjectsToClient', projects);
       });
     });
 
     socket.on('deleteProject', (obj) => {
       deleteUnfinishedProject(obj.projectid).then( async() => {
-        let index = getIndexOfProject(allProjects, obj.projectid);
+        const index = getIndexOfProject(allProjects, obj.projectid);
         allProjects.splice(index, 1);
-        let projects = await getUserProjectsArray(allProjects, obj.token);
+        const projects = await getUserProjectsArray(allProjects, obj.token);
         socket.emit('changeCurrentProject', 0);
         socket.emit('sendProjectsToClient', projects);
         socket.broadcast.emit('projectClosedOut', obj.projectid);
@@ -162,7 +162,7 @@ const runProgram = (allProjects) => {
     socket.on('sendFinishedProject', async (obj) => {
       await sendProjectToDatabase(allProjects, obj.projectid);
       await sendFinishedProjectToDatabase(allProjects, obj.projectid);
-      let projects = await getUserProjectsArray(allProjects, obj.token);
+      const projects = await getUserProjectsArray(allProjects, obj.token);
       socket.emit('changeCurrentProject', 0);
       socket.emit('sendProjectsToClient', projects);
       socket.broadcast.emit('projectClosedOut', obj.projectid);
@@ -170,19 +170,19 @@ const runProgram = (allProjects) => {
     });
 
     socket.on('addUserToProject', async (obj) => {
-      let userId = await checkForUser(obj.username, obj.email);
-      let result = await addUserPermission(userId, obj.projectid);
+      const userId = await checkForUser(obj.username, obj.email);
+      const result = await addUserPermission(userId, obj.projectid);
       socket.emit('resultOfAddingPermission', result);
     });
 
     socket.on('removeUserFromProject', async (obj) => {
-      let id = await getIdFromUsername(obj.username);
+      const id = await getIdFromUsername(obj.username);
       removeUserPermission(id, obj.projectid);
       socket.emit('userPermissionRemoved');
     });
 
     socket.on('checkUser', async (obj) => {
-      let userId = await checkForUser(obj.username, obj.email);
+      const userId = await checkForUser(obj.username, obj.email);
       if(userId){
         socket.emit("resultOfUserCheck", { bool: true, username: obj.username });
       } else {
@@ -191,36 +191,36 @@ const runProgram = (allProjects) => {
     });
 
     socket.on('getUserName', (token) => {
-      let userinfo = getNameFromToken(token);
+      const userinfo = getNameFromToken(token);
       socket.emit('returnUserName', userinfo);
     });
 
     socket.on('getSingleProject', async(id) => {
-      let project = await getProjectFromDbById(id);
+      const project = await getProjectFromDbById(id);
       socket.emit('returnSingleProject', project);
     });
 
     socket.on('getUserRatingForProject', async(obj) => {
-      let id = getIdFromToken(obj.token);
-      let rating = await getRatingByUser(obj.project_id, id);
+      const id = getIdFromToken(obj.token);
+      const rating = await getRatingByUser(obj.project_id, id);
       socket.emit('returnUserRatingForProject', { rating, project_id: obj.project_id });
     });
 
     socket.on('changeUserRatingForProject', async(obj) => {
-      let id = getIdFromToken(obj.token);
-      let result = await addRating(id, obj.project_id, obj.rating);
+      const id = getIdFromToken(obj.token);
+      const result = await addRating(id, obj.project_id, obj.rating);
       if(result !== -1){
         socket.emit('returnUserRatingForProject', { rating: result.rating, project_id: result.project_id })
       }
     });
 
     socket.on('getAvgRatingForProject', async(id) => {
-      let rating = await avgRating(id);
+      const rating = await avgRating(id);
       socket.emit('returnAvgRating', { rating, project_id: id });
     });
 
     socket.on('makeProjectPublic', async (id) => {
-      let result = await promoteProjectToPublic(id);
+      const result = await promoteProjectToPublic(id);
       if(result){
         socket.emit('addMessageToContainer', result);
       } else {
@@ -230,24 +230,24 @@ const runProgram = (allProjects) => {
     });
 
     socket.on('flaggingProject', async (obj) => {
-      let userId = await getIdFromToken(obj.token);
-      let flagResult = flagProject(userId, obj.projectId);
+      const userId = await getIdFromToken(obj.token);
+      const flagResult = flagProject(userId, obj.projectId);
     });
 
     socket.on('didUserFlag', async (obj) => {
-      let userId = await getIdFromToken(obj.token);
-      let flagCheck = await checkIfUserFlagged(userId, obj.project_id);
+      const userId = await getIdFromToken(obj.token);
+      const flagCheck = await checkIfUserFlagged(userId, obj.project_id);
       socket.emit('flagCheckResult', flagCheck);
     });
 
     socket.on('sendVerificationEmail', async (obj) => {
-      let result = await sendVerificationEmail(obj.username, obj.email, obj.token);
+      const result = await sendVerificationEmail(obj.username, obj.email, obj.token);
       socket.emit('addMessageToContainer', result);
     });
 
     socket.on('checkForHash', async (hash) => {
       let hashCheckResult = false;
-      let hashCheck = await checkForUserHash(hash);
+      const hashCheck = await checkForUserHash(hash);
       if(hashCheck){
         let verifyResult = await verifyUser(hashCheck);
         if(verifyResult){
@@ -262,22 +262,22 @@ const runProgram = (allProjects) => {
     });
 
     socket.on('forgotUsername', async (email) => {
-      let result = await forgotUsername(email);
+      const result = await forgotUsername(email);
       socket.emit('addMessageToContainer', result);
     });
 
     socket.on('resendVerificationEmail', async (email) => {
-      let result = await resendVerificationEmail(email);
+      const result = await resendVerificationEmail(email);
       socket.emit('addMessageToContainer', result);
     });
 
     socket.on('passwordResetEmail', async (email) => {
-      let result = await passwordResetEmail(email);
+      const result = await passwordResetEmail(email);
       socket.emit('addMessageToContainer', result);
     });
 
     socket.on('sendPasswordReset', async (obj) => {
-      let result = await resetPassword(obj.password, obj.hash);
+      const result = await resetPassword(obj.password, obj.hash);
       socket.emit('addMessageToContainer', result);
     });
 
@@ -286,7 +286,7 @@ const runProgram = (allProjects) => {
     })
 
     socket.on('sendSupportEmail', async (obj) => {
-      let result = await sendSupportEmail(obj.name, obj.email, obj.message);
+      const result = await sendSupportEmail(obj.name, obj.email, obj.message);
       socket.emit('addMessageToContainer', result);
     });
 

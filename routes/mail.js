@@ -20,11 +20,11 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendVerificationEmail(username, email, token){
-  let userId = getIdFromToken(token);
-  let hashString = username + email;
-  let hash = bcrypt.hashSync(hashString, saltRounds);
-  let modifiedHash = hash.replace(/\//g, '');
-  let hashSaveResult = await addHashToUser(userId, modifiedHash);
+  const userId = getIdFromToken(token);
+  const hashString = username + email;
+  const hash = bcrypt.hashSync(hashString, saltRounds);
+  const modifiedHash = hash.replace(/\//g, '');
+  const hashSaveResult = await addHashToUser(userId, modifiedHash);
 
   if(hashSaveResult){
     const mailOptions = {
@@ -46,7 +46,7 @@ async function sendVerificationEmail(username, email, token){
 
 async function forgotUsername(email){
   let username;
-  let user = await knex('users')
+  const user = await knex('users')
     .where('email', email)
     .returning('username')
     .catch(err => {
@@ -74,7 +74,7 @@ async function forgotUsername(email){
 async function resendVerificationEmail(email){
   let username;
   let userId;
-  let user = await knex('users')
+  const user = await knex('users')
     .where('email', email)
     .returning('*')
     .catch(err => {
@@ -83,10 +83,10 @@ async function resendVerificationEmail(email){
   if(user && user.length){
     username = user[0].username;
     userId = user[0].user_id;
-    let hashString = username + email;
-    let hash = bcrypt.hashSync(hashString, saltRounds);
-    let modifiedHash = hash.replace(/\//g, '');
-    let hashSaveResult = await addHashToUser(userId, modifiedHash);
+    const hashString = username + email;
+    const hash = bcrypt.hashSync(hashString, saltRounds);
+    const modifiedHash = hash.replace(/\//g, '');
+    const hashSaveResult = await addHashToUser(userId, modifiedHash);
     if(hashSaveResult){
       const mailOptions = {
         from: 'PixelArtTeamsDev@gmail.com',
@@ -109,7 +109,7 @@ async function resendVerificationEmail(email){
 async function passwordResetEmail(email){
   let username;
   let userId;
-  let user = await knex('users')
+  const user = await knex('users')
     .where('email', email)
     .returning('*')
     .catch(err => {
@@ -118,10 +118,10 @@ async function passwordResetEmail(email){
   if(user && user.length){
     username = user[0].username;
     userId = user[0].user_id;
-    let hashString = username + email;
-    let hash = bcrypt.hashSync(hashString, saltRounds);
-    let modifiedHash = hash.replace(/\//g, '');
-    let hashSaveResult = await addHashToUser(userId, modifiedHash);
+    const hashString = username + email;
+    const hash = bcrypt.hashSync(hashString, saltRounds);
+    const modifiedHash = hash.replace(/\//g, '');
+    const hashSaveResult = await addHashToUser(userId, modifiedHash);
     if(hashSaveResult){
       const mailOptions = {
         from: 'PixelArtTeamsDev@gmail.com',

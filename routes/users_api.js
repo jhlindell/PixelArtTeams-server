@@ -11,7 +11,7 @@ const logger = new (winston.Logger)({
   });
 
 router.get('/collaborators/:id', (req, res, next) => {
-  let id = req.params.id;
+  const id = req.params.id;
   return knex('users')
     .select('users.username')
     .innerJoin('users_projects', 'users.user_id', 'users_projects.user_id')

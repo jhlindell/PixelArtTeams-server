@@ -19,12 +19,13 @@ function getProjectsFromDatabase() {
     .then((response) => {
       let projectArray = [];
       for(let i = 0; i < response.length; i++){
-        let object = {};
-        object.project_owner = response[i].project_owner;
-        object.project_id = response[i].project_id;
-        object.project_name = response[i].project_name;
-        object.xsize = response[i].xsize;
-        object.ysize = response[i].ysize;
+        let object = {
+          project_owner: response[i].project_owner,
+          project_id: response[i].project_id,
+          project_name: response[i].project_name,
+          xsize: response[i].xsize,
+          ysize: response[i].ysize,
+        };
         if(response[i].started_at){
           object.started_at = response[i].started_at;
         }
@@ -49,8 +50,8 @@ function getProjectsFromDatabase() {
 
 async function sendProjectToDatabase(projectsArray, id){
   let project = getProjectById(projectsArray, id);
-  let gridString = JSON.stringify(project.grid);
-  let convertedString = gridString.replace(/[\"]/g, "'");
+  const gridString = JSON.stringify(project.grid);
+  const convertedString = gridString.replace(/[\"]/g, "'");
   project.grid = convertedString;
   await knex('projects')
     .where('project_id', id)
@@ -64,10 +65,10 @@ async function sendProjectToDatabase(projectsArray, id){
 }
 
 async function sendFinishedProjectToDatabase(projectsArray, projectid){
-  let project = getProjectById(projectsArray, projectid);
-  let index = getIndexOfProject(projectsArray, projectid);
-  let time = new Date();
-  let timeString = moment.utc(time).format();
+  const project = getProjectById(projectsArray, projectid);
+  const index = getIndexOfProject(projectsArray, projectid);
+  const time = new Date();
+  const timeString = moment.utc(time).format();
   await knex('projects')
   .where('project_id', project.project_id)
   .update({is_finished: true, finished_at: timeString})
@@ -98,19 +99,20 @@ function getIndexOfProject(projectsArray, id){
 }
 
 async function addNewProject(projectsArray, obj){
-  let decodedToken = jwt.decode(obj.token, process.env.JWT_KEY);
-  let owner_id = decodedToken.sub;
-  let owner_name = decodedToken.name;
-  let timer = obj.timer;
-  let newProject = {};
-  newProject.project_owner = owner_name;
-  newProject.project_name = obj.name;
-  newProject.grid = '';
-  newProject.ysize = obj.y;
-  newProject.xsize = obj.x;
+  const decodedToken = jwt.decode(obj.token, process.env.JWT_KEY);
+  const owner_id = decodedToken.sub;
+  const owner_name = decodedToken.name;
+  const timer = obj.timer;
+  let newProject = {
+    project_owner: owner_name,
+    project_name: obj.name,
+    grid: '',
+    ysize: obj.y,
+    xsize: obj.x,
+  };
 
-  let start = new Date();
-  let startString = moment.utc(start).format();
+  const start = new Date();
+  const startString = moment.utc(start).format();
   let finish = new Date();
   let finishString = null;
 
@@ -177,9 +179,9 @@ function setupNewGrid(x=20, y=20){
     return [];
   }
   let  newGrid = [];
-  for (var i = 0; i < y; i++) {
+  for (let i = 0; i < y; i++) {
     let row = [];
-    for (var j = 0; j < x; j++) {
+    for (let j = 0; j < x; j++) {
       row.push('#FFF');
     }
     newGrid.push(row);
@@ -208,11 +210,12 @@ async function galleryArt() {
   .where('is_finished', true)
   .then((response) => {
     for(let i = 0; i < response.length; i++){
-      let object = {};
-      object.project_id = response[i].project_id;
-      object.project_name = response[i].project_name;
-      object.xsize = response[i].xsize;
-      object.ysize = response[i].ysize;
+      let object = {
+        project_id: response[i].project_id,
+        project_name: response[i].project_name,
+        xsize: response[i].xsize,
+        ysize: response[i].ysize,
+      };
       if(response[i].started_at){
         object.started_at = response[i].started_at;
       }
@@ -221,7 +224,6 @@ async function galleryArt() {
       }
       object.is_public = response[i].is_public;
       let grid;
-      debugger;
       grid = JSON.parse(response[i].grid);
       object.grid = grid;
       gallery.push(object);
@@ -235,8 +237,8 @@ async function galleryArt() {
 
 async function galleryRatings(gallery){
   let returnGallery = [];
-  let ratedGallery = gallery.map(async (artPiece) => {
-    let rating = await avgRating(artPiece.project_id);
+  const ratedGallery = gallery.map(async (artPiece) => {
+    const rating = await avgRating(artPiece.project_id);
     artPiece.rating = rating;
     return artPiece;
   });
@@ -250,8 +252,8 @@ async function galleryRatings(gallery){
 
 async function galleryFlags(gallery){
   let returnGallery = [];
-  let flaggedGallery = gallery.map(async (artPiece) => {
-    let count = await getFlagCount(artPiece.project_id);
+  const flaggedGallery = gallery.map(async (artPiece) => {
+    const count = await getFlagCount(artPiece.project_id);
     artPiece.flagCount = count;
     return artPiece;
   });
@@ -266,16 +268,15 @@ async function galleryFlags(gallery){
 async function sortRatedGallery(gallery, sortStyle, token){
   switch(sortStyle){
     case 'rating':
-      let ratingGallery = gallery.sort((a, b) => {
+      const ratingGallery = gallery.sort((a, b) => {
         return b.rating - a.rating;
       });
-      let publicRatingGallery = ratingGallery.filter(art => {
+      const publicRatingGallery = ratingGallery.filter(art => {
         if(art.is_public && art.flagCount < FLAG_THRESHOLD){
           return art;
         }
       });
       return publicRatingGallery;
-      return ratingGallery;
 
     case 'new':
       let newGallery = gallery.sort((a, b) => {
@@ -285,7 +286,7 @@ async function sortRatedGallery(gallery, sortStyle, token){
           return -1;
         }
       });
-      let publicNewGallery = newGallery.filter(art => {
+      const publicNewGallery = newGallery.filter(art => {
         if(art.is_public && art.flagCount < FLAG_THRESHOLD){
           return art;
         }
@@ -293,7 +294,7 @@ async function sortRatedGallery(gallery, sortStyle, token){
       return publicNewGallery;
 
     case 'myGallery':
-      let checkedGallery = await checkMyGallery(gallery, token);
+      const checkedGallery = await checkMyGallery(gallery, token);
       return checkedGallery;
 
     case 'flagged':
@@ -309,9 +310,9 @@ async function sortRatedGallery(gallery, sortStyle, token){
 }
 
 async function checkMyGallery(gallery, token){
-  let userId = getIdFromToken(token);
+  const userId = getIdFromToken(token);
   let returnGallery = gallery.map(async (artPiece) => {
-    let permissionExists = await checkUserPermissionOnProject(artPiece.project_id, userId);
+    const permissionExists = await checkUserPermissionOnProject(artPiece.project_id, userId);
     if(permissionExists){
       return artPiece;
     }
@@ -346,7 +347,7 @@ function checkUserPermissionOnProject(projectId, userId){
 
 function changePixel(projectsArray, pixel){
   try {
-    let index = getIndexOfProject(projectsArray, pixel.project);
+    const index = getIndexOfProject(projectsArray, pixel.project);
     if(index === -1) {
       throw 'project index not found';
     } else {

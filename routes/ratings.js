@@ -87,11 +87,11 @@ function avgRating(projectid){
       logger.error(err);
     })
     .then((response) => {
-      let array = response.map(element => {
+      const array = response.map(element => {
         return element.rating;
       });
       if(array.length){
-        let sum = array.reduce((acc, current) => {
+        const sum = array.reduce((acc, current) => {
           return acc + current;
         });
         return sum/array.length;

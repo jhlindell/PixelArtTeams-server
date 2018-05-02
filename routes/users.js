@@ -41,7 +41,7 @@ async function addUserPermission(userId, projectId){
 
 async function addPermissionsByList(projectid, list){
   for(let i = 0; i < list.length; i++){
-    let userid = await getIdFromUsername(list[i]);
+    const userid = await getIdFromUsername(list[i]);
     await addUserPermission(userid, projectid)
   }
 }
@@ -109,8 +109,8 @@ async function checkForUser(userName, Email){
 }
 
 function getUserProjectsArray(projectsArray, token){
-  let decodedToken = jwt.decode(token, process.env.JWT_KEY);
-  let id = decodedToken.sub;
+  const decodedToken = jwt.decode(token, process.env.JWT_KEY);
+  const id = decodedToken.sub;
   let projectIndexArray = [];
   let userProjectsArray = [];
   return knex('users_projects')
@@ -135,12 +135,12 @@ function getUserProjectsArray(projectsArray, token){
 }
 
 function getIdFromToken(token){
-  let decodedToken = jwt.decode(token, process.env.JWT_KEY);
+  const decodedToken = jwt.decode(token, process.env.JWT_KEY);
   return decodedToken.sub;
 }
 
 function getNameFromToken(token){
-  let decodedToken = jwt.decode(token, process.env.JWT_KEY);
+  const decodedToken = jwt.decode(token, process.env.JWT_KEY);
   return { username: decodedToken.name, isMod: decodedToken.isMod };
 }
 
@@ -193,9 +193,9 @@ function verifyUser(userId){
 }
 
 async function resetPassword(password, hash){
-  let salt = bcrypt.genSaltSync();
-  let hashedPassword = bcrypt.hashSync(password, salt);
-  let user = await knex('users')
+  const salt = bcrypt.genSaltSync();
+  const hashedPassword = bcrypt.hashSync(password, salt);
+  const user = await knex('users')
     .where('hash', hash)
     .returning('*')
     .catch(err => {

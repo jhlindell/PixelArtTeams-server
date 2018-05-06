@@ -16,31 +16,26 @@ function getProjectsFromDatabase() {
   return knex('projects')
     .select('*')
     .where('is_finished', false)
-    .then((response) => {
-      let projectArray = [];
-      for(let i = 0; i < response.length; i++){
-        let object = {
-          project_owner: response[i].project_owner,
-          project_id: response[i].project_id,
-          project_name: response[i].project_name,
-          xsize: response[i].xsize,
-          ysize: response[i].ysize,
-        };
-        if(response[i].started_at){
-          object.started_at = response[i].started_at;
+    .then((projects) => {
+      const projectArray = projects.map(element => {
+        let project = {
+              project_owner: element.project_owner,
+              project_id: element.project_id,
+              project_name: element.project_name,
+              xsize: element.xsize,
+              ysize: element.ysize,
+            };
+        if(element.started_at){
+              project.started_at = element.started_at;
         }
-        if(response[i].finished_at){
-          object.finished_at = response[i].finished_at;
+        if(element.finished_at){
+              project.finished_at = element.finished_at;
         }
-        let grid;
-        if(response[i].grid === ''){
-          grid = setupNewGrid(object.xsize, object.ysize);
-        } else {
-          grid = JSON.parse(response[i].grid);
-        }
-        object.grid = grid;
-        projectArray.push(object);
-      }
+        project.grid = (element.grid === '')?
+          setupNewGrid(project.xsize, project.ysize):
+          JSON.parse(element.grid);       
+        return project;
+      });
       return projectArray;
     })
     .catch(err => {
@@ -82,11 +77,11 @@ async function sendFinishedProjectToDatabase(projectsArray, projectid){
 }
 
 function getProjectById(projectsArray, id){
-  for(let i = 0; i < projectsArray.length; i++){
-    if(projectsArray[i].project_id === id){
-      return projectsArray[i];
+  return projectsArray.filter((element)=> {
+    if(element.project_id === id){
+      return element;
     }
-  }
+  })[0]
 }
 
 function getIndexOfProject(projectsArray, id){
@@ -178,9 +173,9 @@ function setupNewGrid(x=20, y=20){
   if(x < 1 || y < 1){
     return [];
   }
-  let  newGrid = [];
+  const  newGrid = [];
   for (let i = 0; i < y; i++) {
-    let row = [];
+    const row = [];
     for (let j = 0; j < x; j++) {
       row.push('#FFF');
     }
@@ -208,26 +203,24 @@ async function galleryArt() {
   return await knex('projects')
   .select()
   .where('is_finished', true)
-  .then((response) => {
-    for(let i = 0; i < response.length; i++){
-      let object = {
-        project_id: response[i].project_id,
-        project_name: response[i].project_name,
-        xsize: response[i].xsize,
-        ysize: response[i].ysize,
-      };
-      if(response[i].started_at){
-        object.started_at = response[i].started_at;
-      }
-      if(response[i].finished_at){
-        object.finished_at = response[i].finished_at;
-      }
-      object.is_public = response[i].is_public;
-      let grid;
-      grid = JSON.parse(response[i].grid);
-      object.grid = grid;
-      gallery.push(object);
-    }
+  .then((projects) => {
+    projects.forEach(element => {
+      let project = {
+            project_id: element.project_id,
+            project_name: element.project_name,
+            xsize: element.xsize,
+            ysize: element.ysize,
+          };
+          if(element.started_at){
+            project.started_at = element.started_at;
+          }
+          if(element.finished_at){
+            project.finished_at = element.finished_at;
+          }
+          project.is_public = element.is_public;
+          project.grid = JSON.parse(element.grid);
+          gallery.push(project);
+    })
     return gallery;
   })
   .catch(err => {
@@ -280,11 +273,7 @@ async function sortRatedGallery(gallery, sortStyle, token){
 
     case 'new':
       let newGallery = gallery.sort((a, b) => {
-        if(moment(b.finished_at).isSameOrAfter(a.finished_at)){
-          return 1;
-        } else {
-          return -1;
-        }
+        return (moment(b.finished_at).isSameOrAfter(a.finished_at)) ? 1: -1;
       });
       const publicNewGallery = newGallery.filter(art => {
         if(art.is_public && art.flagCount < FLAG_THRESHOLD){
@@ -334,11 +323,7 @@ function checkUserPermissionOnProject(projectId, userId){
     .where({ 'user_id': userId, project_id: projectId})
     .returning('*')
     .then(result => {
-      if(result && result.length){
-        return true;
-      } else {
-        return false;
-      }
+      return (result && result.length)? true: false;
     })
     .catch(err => {
       logger.error(err);
@@ -379,11 +364,9 @@ function promoteProjectToPublic(projectid){
     .where('project_id', projectid)
     .returning('*')
     .then(result => {
-      if(result && result[0].is_public){
-        return 'Project Promoted To Public Gallery';
-      } else {
-        return 'Problem Promoting Project To Public Gallery';
-      }
+      return (result && result[0].is_public) ? 
+        'Project Promoted To Public Gallery':
+        'Problem Promoting Project To Public Gallery';
     })
     .catch(err => {
       logger.error(err);

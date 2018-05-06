@@ -17,7 +17,7 @@ router.get('/collaborators/:id', (req, res, next) => {
     .innerJoin('users_projects', 'users.user_id', 'users_projects.user_id')
     .where('users_projects.project_id', id)
     .then(result => {
-      let resultArray = [];
+      const resultArray = [];
       result.forEach(function(element){
         resultArray.push(element.username);
       })

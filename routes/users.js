@@ -17,20 +17,16 @@ async function addUserPermission(userId, projectId){
     .catch(err => {
       logger.error(err);
     })
-    .then(response => {
-      if(response.length === 0){
+    .then(project => {
+      if(project.length === 0){
         return knex('users_projects')
           .insert({user_id: userId, project_id: projectId})
           .returning('*')
           .catch(err => {
             logger.error(err);
           })
-          .then(response => {
-            if(response !== undefined && response.length > 0){
-              return "success";
-            } else {
-              return "error";
-            }
+          .then(permissionResult => {
+            return (permissionResult !== undefined && permissionResult.length > 0) ? "success": "error";
           });
       } else {
         return "user already exists";
@@ -71,9 +67,6 @@ async function removeUserPermission(userid, projectid){
     .catch(err => {
       logger.error(err);
     })
-    .then(response => {
-      // console.log('remove user permission response: ', response[0]);
-    })
   return result;
 }
 
@@ -86,9 +79,9 @@ async function checkForUser(userName, Email){
       .catch(err => {
         logger.error(err);
       })
-      .then(response => {
-        if(response.length > 0){
-          userId = response[0].user_id;
+      .then(user => {
+        if(user.length > 0){
+          userId = user[0].user_id;
         }
       });
   }
@@ -99,9 +92,9 @@ async function checkForUser(userName, Email){
       .catch(err => {
         logger.error(err);
       })
-      .then(response => {
-        if(response.length > 0){
-          userId = response[0].user_id;
+      .then(user => {
+        if(user.length > 0){
+          userId = user[0].user_id;
         }
       });
   }
@@ -152,12 +145,8 @@ function addHashToUser(userId, hash){
     .catch(err => {
       logger.error(err);
     })
-    .then(response => {
-      if(response && response.length){
-        return true;
-      } else {
-        return false;
-      }
+    .then(user => {
+      return (user && user.length) ? true: false;
     });
 }
 
@@ -168,10 +157,8 @@ function checkForUserHash(hash){
     .catch(err => {
       logger.error(err);
     })
-    .then(response => {
-      if(response && response.length){
-        return response[0].user_id;
-      } else return 0;
+    .then(user => {
+      return (user && user.length) ? user[0].user_id : 0
     });
 }
 
@@ -183,12 +170,8 @@ function verifyUser(userId){
     .catch(err => {
       logger.error(err);
     })
-    .then(response => {
-      if(response && response.length){
-        return true;
-      } else {
-        return false;
-      }
+    .then(user => {
+      return (user && user.length) ? true: false;
     });
 }
 
@@ -209,11 +192,7 @@ async function resetPassword(password, hash){
       .catch(err => {
         logger.error(err);
       });
-    if(insertResult && insertResult.length){
-      return 'success';
-    } else {
-      return 'problem updating password';
-    }
+    return (insertResult && insertResult.length) ? 'success': 'problem updating password';
   } else {
     return 'invalid hash';
   }

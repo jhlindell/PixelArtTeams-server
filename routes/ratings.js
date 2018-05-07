@@ -7,9 +7,8 @@ const logger = new (winston.Logger)({
     ]
   });
 
-async function addRating(userid, projectid, rating){
-  let result;
-  result = await knex('ratings')
+function addRating(userid, projectid, rating){
+  return knex('ratings')
     .where({user_id: userid, project_id: projectid})
     .select('*')
     .catch(err => {
@@ -47,7 +46,6 @@ async function addRating(userid, projectid, rating){
           })
       }
     })
-  return result;
 }
 
 function getRatingByUser(projectid, userid){

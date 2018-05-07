@@ -42,9 +42,8 @@ async function addPermissionsByList(projectid, list){
   }
 }
 
-async function getIdFromUsername(username){
-  let result;
-  result = await knex('users')
+function getIdFromUsername(username){
+  return knex('users')
     .where({username: username })
     .select('user_id')
     .catch(err => {
@@ -55,19 +54,16 @@ async function getIdFromUsername(username){
         return response[0].user_id;
       }
     })
-  return result;
 }
 
-async function removeUserPermission(userid, projectid){
-  let result
-  result = await knex('users_projects')
+function removeUserPermission(userid, projectid){
+  return knex('users_projects')
     .where({ user_id: userid })
     .del()
     .returning('user_id')
     .catch(err => {
       logger.error(err);
-    })
-  return result;
+    }).then(result => result)
 }
 
 async function checkForUser(userName, Email){

@@ -7,33 +7,32 @@ const logger = new (winston.Logger)({
     ]
   });
 
-async function addRating(userid, projectid, rating){
-  let result;
-  result = await knex('ratings')
+function addRating(userid, projectid, rating){
+  return knex('ratings')
     .where({user_id: userid, project_id: projectid})
     .select('*')
     .catch(err => {
       logger.error(err);
     })
-    .then(response => {
-      if(response.length === 0){
+    .then(usersProjects => {
+      if(usersProjects.length === 0){
         return knex('ratings')
           .insert({ user_id: userid, project_id: projectid, rating: rating })
           .returning(['user_id', 'project_id', 'rating'])
           .catch(err => {
             logger.error(err);
           })
-          .then(response2 => {
-            if(response2 === undefined ){
+          .then(ratings => {
+            if(ratings === undefined ){
               //username or project don't exist
               return -1;
             } else {
-              return response2[0];
+              return ratings[0];
             }
           })
       }
       else {
-        let id = response[0].rating_id;
+        const id = usersProjects[0].rating_id;
         return knex('ratings')
           .where({ rating_id: id })
           .update({ rating: rating })
@@ -42,12 +41,11 @@ async function addRating(userid, projectid, rating){
             console.log('error');
             logger.error(err);
           })
-          .then(response3 => {
-            return response3[0];
+          .then(project => {
+            return project[0];
           })
       }
     })
-  return result;
 }
 
 function getRatingByUser(projectid, userid){
@@ -57,12 +55,8 @@ function getRatingByUser(projectid, userid){
     .catch(err => {
       logger.error(err);
     })
-    .then((response) => {
-      if(response[0] === undefined){
-        return -1;
-      } else {
-        return response[0].rating;
-      }
+    .then((returnedRating) => {
+      return (returnedRating[0] === undefined)? -1: returnedRating[0].rating;
     })
 }
 
@@ -74,9 +68,7 @@ function deleteRating(userid, projectid){
     .catch(err => {
       logger.error(err);
     })
-    .then((response) => {
-      return response[0].rating;
-    })
+    .then((returnedRating) => returnedRating[0].rating);
 }
 
 function avgRating(projectid){
@@ -90,14 +82,7 @@ function avgRating(projectid){
       const array = response.map(element => {
         return element.rating;
       });
-      if(array.length){
-        const sum = array.reduce((acc, current) => {
-          return acc + current;
-        });
-        return sum/array.length;
-      } else {
-        return 0;
-      }
+      return (array.length) ? array.reduce((acc, current) => acc + current)/array.length : 0;
     });
 }
 

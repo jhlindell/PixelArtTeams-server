@@ -15,20 +15,16 @@ async function flagProject(userId, projectId){
     .catch(err => {
       logger.error(err);
     })
-    .then(response => {
-      if(response === undefined || response.length === 0){
+    .then(flagCheck => {
+      if(flagCheck === undefined || flagCheck.length === 0){
         return knex('flags')
           .insert({user_id: userId, project_id: projectId})
           .returning('*')
           .catch(err => {
             logger.error(err);
           })
-          .then(response => {
-            if(response !== undefined && response.length > 0){
-              return "success";
-            } else {
-              return "error";
-            }
+          .then(insertResult => {
+            return (insertResult !== undefined && insertResult.length > 0) ? "success": "error";
           });
       } else {
         return "flag already exists";
@@ -44,8 +40,8 @@ function getFlagCount(projectId){
     .catch(err => {
       logger.error(err);
     })
-    .then(result => {
-      return result.length;
+    .then(flagCount => {
+      return flagCount.length;
     });
 }
 
@@ -56,12 +52,8 @@ function checkIfUserFlagged(userId, projectId){
     .catch(err => {
       logger.error(err);
     })
-    .then(result => {
-      if(result && result.length){
-        return true;
-      } else {
-        return false;
-      }
+    .then(flagCheck => {
+      return (flagCheck && flagCheck.length) ? true: false;
     });
 }
 

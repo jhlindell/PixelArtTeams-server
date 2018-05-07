@@ -75,7 +75,7 @@ const runProgram = (allProjects) => {
     socket.on('grid', (room) =>{
       try{
         if(room !== 0){
-          let index = getIndexOfProject(allProjects, room);
+          const index = getIndexOfProject(allProjects, room);
           if(index >= 0){
             socket.emit('gridUpdated', allProjects[index].grid);
           } else {
@@ -223,10 +223,7 @@ const runProgram = (allProjects) => {
       const result = await promoteProjectToPublic(id);
       if(result){
         socket.emit('addMessageToContainer', result);
-      } else {
-        socket.emit('addMessageToContainer', result);
       }
-
     });
 
     socket.on('flaggingProject', async (obj) => {
@@ -254,11 +251,9 @@ const runProgram = (allProjects) => {
           hashCheckResult = true;
         }
       }
-      if(hashCheckResult){
-        socket.emit('hashCheckResult', 'User Verified');
-      } else {
+      (hashCheckResult) ?
+        socket.emit('hashCheckResult', 'User Verified'):
         socket.emit('hashCheckResult', 'User Verification Failed');
-      }
     });
 
     socket.on('forgotUsername', async (email) => {
